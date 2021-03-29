@@ -8,13 +8,13 @@
 import UIKit
 import Reachability
 
-class NoInternetViewController: UIViewController
+public class NoInternetViewController: UIViewController
 {
     @IBOutlet weak private var retryBtn: UIButton!
     var isReachable = false
     let reachability = try! Reachability(hostname: "google.com")
 
-    override func viewDidLoad()
+    public override func viewDidLoad()
     {
         super.viewDidLoad()
         // Do any additional setup after loading the view.

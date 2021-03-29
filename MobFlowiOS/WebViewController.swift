@@ -16,7 +16,7 @@ protocol WebViewControllerDelegate
     func present(dic: [String: Any])
 }
 
-class WebViewController: UIViewController
+public class WebViewController: UIViewController
 {
     @IBOutlet weak private var webView: WKWebView!
     @IBOutlet weak private var titleLabel: UILabel!
@@ -30,7 +30,7 @@ class WebViewController: UIViewController
     let reachability = try! Reachability(hostname: "google.com")
     var delegate : WebViewControllerDelegate? = nil
     
-    override func viewDidLoad()
+    public override func viewDidLoad()
     {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
@@ -88,22 +88,22 @@ class WebViewController: UIViewController
 
 extension WebViewController: WKNavigationDelegate
 {
-    func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!)
+    public func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!)
     {
         print("Started to load")
     }
     
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!)
+    public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!)
     {
         print("Finished loading")
     }
     
-    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error)
+    public func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error)
     {
         print(error.localizedDescription)
     }
     
-    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void)
+    public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void)
     {
         decisionHandler(WKNavigationActionPolicy.allow)
         if let url = navigationAction.request.url
