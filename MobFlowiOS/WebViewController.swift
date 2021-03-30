@@ -20,7 +20,14 @@ public class WebViewController: UIViewController
 {
     @IBOutlet weak private var webView: WKWebView!
     @IBOutlet weak private var titleLabel: UILabel!
-    @IBOutlet weak private var closeBtn: UIButton!
+    @IBOutlet weak private var closeBtn: UIButton! {
+        didSet {
+            let image = UIImage(named: "close",
+                                in: Bundle(for: type(of:self)),
+                                compatibleWith: nil)
+            self.closeBtn.setImage(image, for: .normal)
+        }
+    }
     @IBOutlet weak private var toolbar: UIView!
     @IBOutlet weak var toolbarHeight: NSLayoutConstraint!
     
@@ -134,7 +141,8 @@ extension WebViewController: WKNavigationDelegate
     
     func presentNoInternetViewController()
     {
-        let storyBoard = UIStoryboard(name: "Main", bundle:nil)
+        let bundle = Bundle(for: type(of:self))
+        let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
         let view = storyBoard.instantiateViewController(withIdentifier: "NoInternetViewController") as! NoInternetViewController
         self.present(view, animated: true, completion: nil)
     }

@@ -141,7 +141,8 @@ public class MobiFlowSwift: NSObject
     {
         let customURL = UserDefaults.standard.value(forKey: "customURL") as! String
         let urlToOpen = URL(string: customURL)
-        let storyBoard = UIStoryboard(name: "Main", bundle:nil)
+        let bundle = Bundle(for: type(of:self))
+        let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
         let webView = storyBoard.instantiateViewController(withIdentifier: "WebViewController") as! WebViewController
         webView.urlToOpen = urlToOpen!
         webView.schemeURL = self.schemeURL
@@ -156,7 +157,8 @@ public class MobiFlowSwift: NSObject
         let urlToOpen = URL(string: self.addressURL.removingPercentEncoding!)
         if (urlToOpen != nil)
         {
-            let storyBoard = UIStoryboard(name: "Main", bundle:nil)
+            let bundle = Bundle(for: type(of:self))
+            let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
             let webView = storyBoard.instantiateViewController(withIdentifier: "WebViewController") as! WebViewController
             webView.urlToOpen = urlToOpen!
             webView.schemeURL = self.schemeURL
@@ -400,7 +402,8 @@ extension MobiFlowSwift: WebViewControllerDelegate
             else if !self.addressURL.isEmpty
             {
                 let urlToOpen = URL(string: self.addressURL.removingPercentEncoding!)
-                let storyBoard = UIStoryboard(name: "Main", bundle:nil)
+                let bundle = Bundle(for: type(of:self))
+                let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
                 let webView = storyBoard.instantiateViewController(withIdentifier: "WebViewController") as! WebViewController
                 webView.urlToOpen = urlToOpen!
                 webView.schemeURL = self.schemeURL
