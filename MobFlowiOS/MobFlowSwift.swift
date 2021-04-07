@@ -128,11 +128,26 @@ public class MobiFlowSwift: NSObject
         let idfa = Adjust.adid() ?? ""
         let adid = Adjust.idfa() ?? ""
         let fScheme = self.scheme.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-        let deeplinkURL = UserDefaults.standard.value(forKey: "deeplinkURL") as? String
-        var d = deeplinkURL!.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-        d = d.replacingOccurrences(of: "=", with: "%3D", options: .literal, range: nil)
-        d = d.replacingOccurrences(of: "&", with: "%26", options: .literal, range: nil)
-        let string =  "\(self.endpoint)?packageName=\(packageName)&flowName=iosBA&lang=\(lang)&deviceId=\(uuid)&AdjustId=\(idfa)&gpsAdid=\(adid)&referringLink=\(d)&fScheme=\(fScheme)"
+        var d = ""
+        if self.isDeeplinkURL == 1
+        {
+            if UserDefaults.standard.value(forKey: "deeplinkURL") != nil
+            {
+                let deeplinkURL = UserDefaults.standard.value(forKey: "deeplinkURL") as? String
+                d = deeplinkURL!.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+                d = d.replacingOccurrences(of: "=", with: "%3D", options: .literal, range: nil)
+                d = d.replacingOccurrences(of: "&", with: "%26", options: .literal, range: nil)
+            }
+        }
+        if self.isDeeplinkURL == 0
+        {
+            d = "fScheme=\(fScheme)"
+        }
+        else
+        {
+            d = "\(d)&fScheme=\(fScheme)"
+        }
+        let string =  "\(self.endpoint)?packageName=\(packageName)&flowName=iosBA&lang=\(lang)&deviceId=\(uuid)&AdjustId=\(idfa)&gpsAdid=\(adid)&referringLink=\(d)"
         UserDefaults.standard.setValue(string, forKey: "customURL")
         UserDefaults.standard.synchronize()
     }
@@ -388,42 +403,35 @@ extension MobiFlowSwift: WebViewControllerDelegate
     
     func startApp()
     {
-        if (UserDefaults.standard.value(forKey: "deeplinkURL") != nil)
+        if schemeURL.isEmpty
         {
-            if schemeURL.isEmpty
+            if UserDefaults.standard.value(forKey: "customURL") == nil
             {
-                if UserDefaults.standard.value(forKey: "customURL") == nil
-                {
-                    self.createCustomURL()
-                }
-                let webView = initWebViewURL()
-                self.present(webView: webView)
+                self.createCustomURL()
             }
-            else if !self.addressURL.isEmpty
-            {
-                let urlToOpen = URL(string: self.addressURL.removingPercentEncoding!)
-                let bundle = Bundle(for: type(of:self))
-                let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
-                let webView = storyBoard.instantiateViewController(withIdentifier: "WebViewController") as! WebViewController
-                webView.urlToOpen = urlToOpen!
-                webView.schemeURL = self.schemeURL
-                webView.addressURL = self.addressURL
-                webView.delegate = self
-                self.present(webView: webView)
-            }
-            else
-            {
-                self.delegate?.present(dic: [String: Any]())
-                let url = URL(string: self.schemeURL)
-                if UIApplication.shared.canOpenURL(url!)
-                {
-                    UIApplication.shared.open(url!)
-                }
-            }
+            let webView = initWebViewURL()
+            self.present(webView: webView)
+        }
+        else if !self.addressURL.isEmpty
+        {
+            let urlToOpen = URL(string: self.addressURL.removingPercentEncoding!)
+            let bundle = Bundle(for: type(of:self))
+            let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
+            let webView = storyBoard.instantiateViewController(withIdentifier: "WebViewController") as! WebViewController
+            webView.urlToOpen = urlToOpen!
+            webView.schemeURL = self.schemeURL
+            webView.addressURL = self.addressURL
+            webView.delegate = self
+            self.present(webView: webView)
         }
         else
         {
             self.delegate?.present(dic: [String: Any]())
+            let url = URL(string: self.schemeURL)
+            if UIApplication.shared.canOpenURL(url!)
+            {
+                UIApplication.shared.open(url!)
+            }
         }
     }
 }
