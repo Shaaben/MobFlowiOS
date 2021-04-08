@@ -9,6 +9,7 @@ import UIKit
 import Adjust
 import FirebaseCore
 import FirebaseMessaging
+import AppTrackingTransparency
 
 public protocol MobiFlowDelegate
 {
@@ -49,19 +50,6 @@ public class MobiFlowSwift: NSObject
         let uuid = UIDevice.current.identifierForVendor!.uuidString
         Adjust.addSessionCallbackParameter("App_To_Adjust_DeviceId", value: uuid)
         Adjust.appDidLaunch(adjustConfig)
-        
-        if #available(iOS 10.0, *) {
-          // For iOS 10 display notification (sent via APNS)
-          UNUserNotificationCenter.current().delegate = self
-          let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
-          UNUserNotificationCenter.current().requestAuthorization(
-            options: authOptions,
-            completionHandler: {_, _ in })
-        } else {
-          let settings: UIUserNotificationSettings =
-          UIUserNotificationSettings(types: [.alert, .badge, .sound], categories: nil)
-            UIApplication.shared.registerUserNotificationSettings(settings)
-        }
 
         UIApplication.shared.registerForRemoteNotifications()
     }
@@ -75,6 +63,34 @@ public class MobiFlowSwift: NSObject
         else if self.isDeeplinkURL == 1
         {
             timer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(updateCounting), userInfo: nil, repeats: true)
+        }
+    }
+    
+    func requestPremission()
+    {
+        UNUserNotificationCenter.current().delegate = self
+        let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
+        UNUserNotificationCenter.current().requestAuthorization(
+                options: authOptions,
+                completionHandler: {_, _ in })
+        
+        if #available(iOS 14, *)
+        {
+            ATTrackingManager.requestTrackingAuthorization { (authStatus) in
+                switch authStatus
+                {
+                case .notDetermined:
+                    print("Not Determined")
+                case .restricted:
+                    print("Restricted")
+                case .denied:
+                    print("Denied")
+                case .authorized:
+                    print("Authorized")
+                @unknown default:
+                    break
+                }
+            }
         }
     }
     
@@ -125,8 +141,8 @@ public class MobiFlowSwift: NSObject
         let lang = Locale.current.languageCode ?? ""
         let packageName = Bundle.main.bundleIdentifier ?? ""
         let uuid = UIDevice.current.identifierForVendor!.uuidString
-        let idfa = Adjust.adid() ?? ""
-        let adid = Adjust.idfa() ?? ""
+        let adid = Adjust.adid() ?? ""
+        let idfa = Adjust.idfa() ?? ""
         let fScheme = self.scheme.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
         var d = ""
         if self.isDeeplinkURL == 1
@@ -426,6 +442,7 @@ extension MobiFlowSwift: WebViewControllerDelegate
         }
         else
         {
+            self.requestPremission()
             self.delegate?.present(dic: [String: Any]())
             let url = URL(string: self.schemeURL)
             if UIApplication.shared.canOpenURL(url!)
