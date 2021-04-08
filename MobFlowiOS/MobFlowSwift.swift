@@ -29,6 +29,8 @@ public class MobiFlowSwift: NSObject
     public var delegate : MobiFlowDelegate? = nil
     var counter = 0.0
     var timer = Timer()
+    public var backgroundColor = UIColor.white
+    public var tintColor = UIColor.black
 
     public init(isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, adjPushToken: String)
     {
@@ -179,6 +181,8 @@ public class MobiFlowSwift: NSObject
         webView.schemeURL = self.schemeURL
         webView.addressURL = self.addressURL
         webView.delegate = self
+        webView.tintColor = self.tintColor
+        webView.backgroundColor = self.backgroundColor
 
         return webView
     }
@@ -195,6 +199,8 @@ public class MobiFlowSwift: NSObject
             webView.schemeURL = self.schemeURL
             webView.addressURL = self.addressURL
             webView.delegate = self
+            webView.tintColor = self.tintColor
+            webView.backgroundColor = self.backgroundColor
             self.present(webView: webView)
         }
     }
@@ -408,6 +414,7 @@ extension MobiFlowSwift: WebViewControllerDelegate
 {
     func present(dic: [String : Any])
     {
+        self.requestPremission()
         self.delegate?.present(dic: dic)
     }
     
@@ -438,6 +445,8 @@ extension MobiFlowSwift: WebViewControllerDelegate
             webView.schemeURL = self.schemeURL
             webView.addressURL = self.addressURL
             webView.delegate = self
+            webView.tintColor = self.tintColor
+            webView.backgroundColor = self.backgroundColor
             self.present(webView: webView)
         }
         else

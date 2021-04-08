@@ -26,21 +26,20 @@
                                             <constraint firstAttribute="width" constant="120" id="iDH-9o-3Hn"/>
                                         </constraints>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <nil key="textColor"/>
+                                        <color key="textColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VsA-Vd-nZj">
-                                        <rect key="frame" x="16" y="9" width="32" height="32"/>
+                                        <rect key="frame" x="16" y="13" width="24" height="24"/>
                                         <constraints>
-                                            <constraint firstAttribute="height" constant="32" id="Kok-zY-C11"/>
-                                            <constraint firstAttribute="width" constant="32" id="oiy-M3-wQv"/>
+                                            <constraint firstAttribute="height" constant="24" id="Kok-zY-C11"/>
+                                            <constraint firstAttribute="width" constant="24" id="oiy-M3-wQv"/>
                                         </constraints>
                                         <connections>
                                             <action selector="dismissWebView:" destination="fdC-9a-VXm" eventType="touchUpInside" id="15n-rB-7VL"/>
                                         </connections>
                                     </button>
                                 </subviews>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="leading" secondItem="VsA-Vd-nZj" secondAttribute="leading" constant="-16" id="ERd-NX-H3V"/>
                                     <constraint firstItem="ZbM-jO-nE9" firstAttribute="centerX" secondItem="oKv-gB-kjb" secondAttribute="centerX" id="GTo-JY-2WY"/>

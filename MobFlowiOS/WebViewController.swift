@@ -19,13 +19,18 @@ protocol WebViewControllerDelegate
 public class WebViewController: UIViewController
 {
     @IBOutlet weak private var webView: WKWebView!
-    @IBOutlet weak private var titleLabel: UILabel!
+    @IBOutlet weak private var titleLabel: UILabel! {
+        didSet {
+            self.titleLabel.textColor = self.tintColor
+        }
+    }
     @IBOutlet weak private var closeBtn: UIButton! {
         didSet {
             let image = UIImage(named: "close",
                                 in: Bundle(for: type(of:self)),
-                                compatibleWith: nil)
+                                compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
             self.closeBtn.setImage(image, for: .normal)
+            self.closeBtn.tintColor = self.tintColor
         }
     }
     @IBOutlet weak private var toolbar: UIView!
@@ -36,11 +41,14 @@ public class WebViewController: UIViewController
     var addressURL = ""
     let reachability = try! Reachability(hostname: "google.com")
     var delegate : WebViewControllerDelegate? = nil
-    
+    var backgroundColor = UIColor.white
+    var tintColor = UIColor.black
+
     public override func viewDidLoad()
     {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+        self.view.backgroundColor = self.backgroundColor
         let request = URLRequest(url: self.urlToOpen!)
         self.webView.navigationDelegate = self
         self.webView.load(request)
