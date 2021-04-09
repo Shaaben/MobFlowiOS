@@ -10,9 +10,16 @@ import Reachability
 
 public class NoInternetViewController: UIViewController
 {
-    @IBOutlet weak private var retryBtn: UIButton!
+    @IBOutlet weak private var retryBtn: UIButton! {
+        didSet {
+            self.retryBtn.titleLabel!.textColor = self.tintColor
+            self.retryBtn.backgroundColor = self.backgroundColor
+        }
+    }
     var isReachable = false
     let reachability = try! Reachability(hostname: "google.com")
+    var backgroundColor = UIColor.white
+    var tintColor = UIColor.black
 
     public override func viewDidLoad()
     {

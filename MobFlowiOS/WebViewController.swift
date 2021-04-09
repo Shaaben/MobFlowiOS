@@ -152,6 +152,8 @@ extension WebViewController: WKNavigationDelegate
         let bundle = Bundle(for: type(of:self))
         let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
         let view = storyBoard.instantiateViewController(withIdentifier: "NoInternetViewController") as! NoInternetViewController
+        view.backgroundColor = self.backgroundColor
+        view.tintColor = self.tintColor
         self.present(view, animated: true, completion: nil)
     }
 }

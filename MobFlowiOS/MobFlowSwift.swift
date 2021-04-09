@@ -165,7 +165,7 @@ public class MobiFlowSwift: NSObject
         {
             d = "\(d)&fScheme=\(fScheme)"
         }
-        let string =  "\(self.endpoint)?packageName=\(packageName)&flowName=iosBA&lang=\(lang)&deviceId=\(uuid)&AdjustId=\(idfa)&gpsAdid=\(adid)&referringLink=\(d)"
+        let string =  "\(self.endpoint)?packageName=\(packageName)&flowName=iosBA&lang=\(lang)&deviceId=\(uuid)&AdjustId=\(adid)&gpsAdid=\(idfa)&referringLink=\(d)"
         UserDefaults.standard.setValue(string, forKey: "customURL")
         UserDefaults.standard.synchronize()
     }
