@@ -27,7 +27,7 @@ public class MobiFlowSwift: NSObject
     var addressURL = ""
     let gcmMessageIDKey = "gcm.Message_ID"
     public var delegate : MobiFlowDelegate? = nil
-    var counter = 0.0
+    var counter = 0
     var timer = Timer()
     public var backgroundColor = UIColor.white
     public var tintColor = UIColor.black
@@ -64,7 +64,7 @@ public class MobiFlowSwift: NSObject
         }
         else if self.isDeeplinkURL == 1
         {
-            timer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(updateCounting), userInfo: nil, repeats: true)
+            timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(updateCounting), userInfo: nil, repeats: true)
         }
     }
     
@@ -106,7 +106,7 @@ public class MobiFlowSwift: NSObject
         }
         else if counter < 10
         {
-            counter = counter + 0.5
+            counter = counter + 1
         }
         else
         {
@@ -157,15 +157,7 @@ public class MobiFlowSwift: NSObject
                 d = d.replacingOccurrences(of: "&", with: "%26", options: .literal, range: nil)
             }
         }
-        if self.isDeeplinkURL == 0
-        {
-            d = "fScheme=\(fScheme)"
-        }
-        else
-        {
-            d = "\(d)&fScheme=\(fScheme)"
-        }
-        let string =  "\(self.endpoint)?packageName=\(packageName)&flowName=iosBA&lang=\(lang)&deviceId=\(uuid)&AdjustId=\(adid)&gpsAdid=\(idfa)&referringLink=\(d)"
+        let string =  "\(self.endpoint)?packageName=\(packageName)&flowName=iosBA&lang=\(lang)&deviceId=\(uuid)&AdjustId=\(adid)&gpsAdid=\(idfa)&referringLink=\(d)&fScheme=\(fScheme)"
         UserDefaults.standard.setValue(string, forKey: "customURL")
         UserDefaults.standard.synchronize()
     }
