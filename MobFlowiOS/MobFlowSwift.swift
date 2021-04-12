@@ -23,6 +23,7 @@ public class MobiFlowSwift: NSObject
     var endpoint = ""
     var adjAppToken = ""
     var adjPushToken = ""
+    var customURL = ""
     var schemeURL = ""
     var addressURL = ""
     let gcmMessageIDKey = "gcm.Message_ID"
@@ -157,15 +158,13 @@ public class MobiFlowSwift: NSObject
                 d = d.replacingOccurrences(of: "&", with: "%26", options: .literal, range: nil)
             }
         }
-        let string =  "\(self.endpoint)?packageName=\(packageName)&flowName=iosBA&lang=\(lang)&deviceId=\(uuid)&AdjustId=\(adid)&gpsAdid=\(idfa)&referringLink=\(d)&fScheme=\(fScheme)"
-        UserDefaults.standard.setValue(string, forKey: "customURL")
-        UserDefaults.standard.synchronize()
+        let string =  "\(self.endpoint)?packageName=\(packageName)&flowName=iosBA&lang=\(lang)&deviceId=\(uuid)&adjustId=\(adid)&gpsAdid=\(idfa)&referringLink=\(d)&fScheme=\(fScheme)"
+        self.customURL = string
     }
     
     func initWebViewURL() -> WebViewController
     {
-        let customURL = UserDefaults.standard.value(forKey: "customURL") as! String
-        let urlToOpen = URL(string: customURL)
+        let urlToOpen = URL(string: self.customURL)
         let bundle = Bundle(for: type(of:self))
         let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
         let webView = storyBoard.instantiateViewController(withIdentifier: "WebViewController") as! WebViewController
@@ -420,7 +419,7 @@ extension MobiFlowSwift: WebViewControllerDelegate
     {
         if schemeURL.isEmpty
         {
-            if UserDefaults.standard.value(forKey: "customURL") == nil
+            if self.customURL.isEmpty
             {
                 self.createCustomURL()
             }
