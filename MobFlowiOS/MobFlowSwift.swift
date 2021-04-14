@@ -32,6 +32,7 @@ public class MobiFlowSwift: NSObject
     var timer = Timer()
     public var backgroundColor = UIColor.white
     public var tintColor = UIColor.black
+    public var hideToolbar = false
 
     public init(isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, adjPushToken: String)
     {
@@ -194,6 +195,27 @@ public class MobiFlowSwift: NSObject
             webView.backgroundColor = self.backgroundColor
             self.present(webView: webView)
         }
+    }
+    
+    public func getWebView() -> WebViewController?
+    {
+        let urlToOpen = URL(string: self.addressURL.removingPercentEncoding!)
+        if (urlToOpen != nil)
+        {
+            let bundle = Bundle(for: type(of:self))
+            let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
+            let webView = storyBoard.instantiateViewController(withIdentifier: "WebViewController") as! WebViewController
+            webView.urlToOpen = urlToOpen!
+            webView.schemeURL = self.schemeURL
+            webView.addressURL = self.addressURL
+            webView.delegate = self
+            webView.tintColor = self.tintColor
+            webView.backgroundColor = self.backgroundColor
+            
+            return webView
+        }
+        
+        return nil
     }
     
     func present(webView: WebViewController)

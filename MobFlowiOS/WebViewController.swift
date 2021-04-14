@@ -43,6 +43,7 @@ public class WebViewController: UIViewController
     var delegate : WebViewControllerDelegate? = nil
     var backgroundColor = UIColor.white
     var tintColor = UIColor.black
+    var hideToolbar = false
 
     public override func viewDidLoad()
     {
@@ -55,9 +56,18 @@ public class WebViewController: UIViewController
         let urlToOpen = URL(string: self.addressURL.removingPercentEncoding!)
         if (urlToOpen != nil)
         {
-            self.toolbar.isHidden = false
-            toolbarHeight.constant = 50
-            self.toolbar.layoutIfNeeded()
+            if !self.hideToolbar
+            {
+                self.toolbar.isHidden = false
+                toolbarHeight.constant = 50
+                self.toolbar.layoutIfNeeded()
+            }
+            else
+            {
+                self.toolbar.isHidden = true
+                toolbarHeight.constant = 0
+                self.toolbar.layoutIfNeeded()
+            }
         }
         else
         {
