@@ -175,6 +175,7 @@ public class MobiFlowSwift: NSObject
         webView.delegate = self
         webView.tintColor = self.tintColor
         webView.backgroundColor = self.backgroundColor
+        webView.hideToolbar = self.hideToolbar
 
         return webView
     }
@@ -193,6 +194,7 @@ public class MobiFlowSwift: NSObject
             webView.delegate = self
             webView.tintColor = self.tintColor
             webView.backgroundColor = self.backgroundColor
+            webView.hideToolbar = self.hideToolbar
             self.present(webView: webView)
         }
     }
@@ -211,7 +213,8 @@ public class MobiFlowSwift: NSObject
             webView.delegate = self
             webView.tintColor = self.tintColor
             webView.backgroundColor = self.backgroundColor
-            
+            webView.hideToolbar = self.hideToolbar
+
             return webView
         }
         
