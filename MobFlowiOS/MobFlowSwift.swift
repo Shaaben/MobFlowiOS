@@ -151,13 +151,10 @@ public class MobiFlowSwift: NSObject
         var d = ""
         if self.isDeeplinkURL == 1
         {
-            if UserDefaults.standard.value(forKey: "deeplinkURL") != nil
-            {
-                let deeplinkURL = UserDefaults.standard.value(forKey: "deeplinkURL") as? String
-                d = deeplinkURL!.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-                d = d.replacingOccurrences(of: "=", with: "%3D", options: .literal, range: nil)
-                d = d.replacingOccurrences(of: "&", with: "%26", options: .literal, range: nil)
-            }
+            let deeplinkURL = UserDefaults.standard.value(forKey: "deeplinkURL") as? String
+            d = deeplinkURL!.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+            d = d.replacingOccurrences(of: "=", with: "%3D", options: .literal, range: nil)
+            d = d.replacingOccurrences(of: "&", with: "%26", options: .literal, range: nil)
         }
         let string =  "\(self.endpoint)?packageName=\(packageName)&flowName=iosBA&lang=\(lang)&deviceId=\(uuid)&adjustId=\(adid)&gpsAdid=\(idfa)&referringLink=\(d)&fScheme=\(fScheme)"
         self.customURL = string
@@ -442,38 +439,46 @@ extension MobiFlowSwift: WebViewControllerDelegate
     
     func startApp()
     {
-        if schemeURL.isEmpty
+        if self.isDeeplinkURL == 0 || (self.isDeeplinkURL == 1 && UserDefaults.standard.object(forKey: "deeplinkURL") != nil)
         {
-            if self.customURL.isEmpty
+            if schemeURL.isEmpty
             {
-                self.createCustomURL()
+                if self.customURL.isEmpty
+                {
+                    self.createCustomURL()
+                }
+                let webView = initWebViewURL()
+                self.present(webView: webView)
             }
-            let webView = initWebViewURL()
-            self.present(webView: webView)
-        }
-        else if !self.addressURL.isEmpty
-        {
-            let urlToOpen = URL(string: self.addressURL.removingPercentEncoding!)
-            let bundle = Bundle(for: type(of:self))
-            let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
-            let webView = storyBoard.instantiateViewController(withIdentifier: "WebViewController") as! WebViewController
-            webView.urlToOpen = urlToOpen!
-            webView.schemeURL = self.schemeURL
-            webView.addressURL = self.addressURL
-            webView.delegate = self
-            webView.tintColor = self.tintColor
-            webView.backgroundColor = self.backgroundColor
-            self.present(webView: webView)
+            else if !self.addressURL.isEmpty
+            {
+                let urlToOpen = URL(string: self.addressURL.removingPercentEncoding!)
+                let bundle = Bundle(for: type(of:self))
+                let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
+                let webView = storyBoard.instantiateViewController(withIdentifier: "WebViewController") as! WebViewController
+                webView.urlToOpen = urlToOpen!
+                webView.schemeURL = self.schemeURL
+                webView.addressURL = self.addressURL
+                webView.delegate = self
+                webView.tintColor = self.tintColor
+                webView.backgroundColor = self.backgroundColor
+                self.present(webView: webView)
+            }
+            else
+            {
+                self.requestPremission()
+                self.delegate?.present(dic: [String: Any]())
+                let url = URL(string: self.schemeURL)
+                if UIApplication.shared.canOpenURL(url!)
+                {
+                    UIApplication.shared.open(url!)
+                }
+            }
         }
         else
         {
             self.requestPremission()
             self.delegate?.present(dic: [String: Any]())
-            let url = URL(string: self.schemeURL)
-            if UIApplication.shared.canOpenURL(url!)
-            {
-                UIApplication.shared.open(url!)
-            }
         }
     }
 }
