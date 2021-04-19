@@ -45,7 +45,7 @@ public class MobiFlowSwift: NSObject
         self.adjPushToken = adjPushToken
         
         FirebaseApp.configure()
-        Messaging.messaging().delegate = self
+        //Messaging.messaging().delegate = self
 
         let environment = ADJEnvironmentProduction
         let adjustConfig = ADJConfig(appToken: self.adjAppToken, environment: environment)
@@ -55,7 +55,7 @@ public class MobiFlowSwift: NSObject
         Adjust.addSessionCallbackParameter("App_To_Adjust_DeviceId", value: uuid)
         Adjust.appDidLaunch(adjustConfig)
 
-        UIApplication.shared.registerForRemoteNotifications()
+        //UIApplication.shared.registerForRemoteNotifications()
     }
     
     public func start()
@@ -72,11 +72,11 @@ public class MobiFlowSwift: NSObject
     
     func requestPremission()
     {
-        UNUserNotificationCenter.current().delegate = self
+        /*UNUserNotificationCenter.current().delegate = self
         let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
         UNUserNotificationCenter.current().requestAuthorization(
                 options: authOptions,
-                completionHandler: {_, _ in })
+                completionHandler: {_, _ in })*/
         
         if #available(iOS 14, *)
         {
@@ -258,7 +258,7 @@ extension MobiFlowSwift: UIApplicationDelegate
     }
 }
 
-extension MobiFlowSwift: MessagingDelegate
+/*extension MobiFlowSwift: MessagingDelegate
 {
     public func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?)
     {
@@ -277,9 +277,9 @@ extension MobiFlowSwift: MessagingDelegate
         adjustEvent?.addCallbackParameter("App_To_Adjust_DeviceId", value: uuid);
         Adjust.trackEvent(adjustEvent)
     }
-}
+}*/
 
-@available(iOS 10, *)
+/*@available(iOS 10, *)
 extension MobiFlowSwift : UNUserNotificationCenterDelegate
 {
     // Receive displayed notifications for iOS 10 devices.
@@ -363,7 +363,7 @@ extension MobiFlowSwift : UNUserNotificationCenterDelegate
         
         completionHandler(UIBackgroundFetchResult.newData)
     }
-}
+}*/
 
 extension MobiFlowSwift: AdjustDelegate
 {
