@@ -46,6 +46,7 @@ public class MobiFlowSwift: NSObject
         
         FirebaseApp.configure()
         Messaging.messaging().delegate = self
+        UNUserNotificationCenter.current().delegate = self
 
         let environment = ADJEnvironmentProduction
         let adjustConfig = ADJConfig(appToken: self.adjAppToken, environment: environment)
@@ -72,7 +73,6 @@ public class MobiFlowSwift: NSObject
     
     func requestPremission()
     {
-        //UNUserNotificationCenter.current().delegate = self
         let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
         UNUserNotificationCenter.current().requestAuthorization(
                 options: authOptions,
@@ -251,7 +251,6 @@ extension MobiFlowSwift: UIApplicationDelegate
 {
     public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool
     {
-        UNUserNotificationCenter.current().delegate = self
 
         return true
     }
@@ -316,62 +315,31 @@ extension MobiFlowSwift : UNUserNotificationCenterDelegate
     public func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 didReceive response: UNNotificationResponse,
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
-        let userInfo = response.notification.request.content.userInfo
-        // Print message ID.
-        if let messageID = userInfo[gcmMessageIDKey] {
-            print("Message ID: \(messageID)")
-        }
-                
-        // Print full message.
-        print(userInfo)
         
-        let action_id = userInfo["action_id"] as! String
-        let deeplink = userInfo["deeplink"] as! String
-        if action_id == "1"
-        {
-            let url = URL(string: deeplink)
-            if UIApplication.shared.canOpenURL(url!)
-            {
-                UIApplication.shared.open(url!)
+        guard let userInfo = response.notification.request.content.userInfo as? [String: Any] else { return }
+        
+        let userInfoLink = userInfo["link"] as? String ?? ""
+        let userInfoDeeplink = userInfo["deeplink"] as? String ?? ""
+        let action_id = userInfo["action_id"] as? String ?? ""
+        
+        if (action_id == "1") {
+            if (userInfoLink != "") {
+                let url = URL(string: userInfoLink)
+                if (url != nil) {
+                    UIApplication.shared.open(url!, options: [:], completionHandler: nil)
+                }
+            } else if (userInfoDeeplink != "") {
+                let url = URL(string: userInfoDeeplink)
+                if (url != nil) {
+                    UIApplication.shared.open(url!, options: [:], completionHandler: nil)
+                }
             }
         }
-        
-        completionHandler()
     }
     
     private func application(application: UIApplication,
                      didRegisterForRemoteNotificationsWithDeviceToken deviceToken: NSData) {
         Messaging.messaging().apnsToken = deviceToken as Data
-    }
-    
-    public func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any])
-    {
-         if let messageID = userInfo[gcmMessageIDKey] {
-            print("Message ID: \(messageID)")
-        }
-        
-        // Print full message.
-        print(userInfo)
-    }
-    
-    public func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any],
-                            fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-        // If you are receiving a notification message while your app is in the background,
-        // this callback will not be fired till the user taps on the notification launching the application.
-        // TODO: Handle data of notification
-        
-        // With swizzling disabled you must let Messaging know about the message, for Analytics
-        Messaging.messaging().appDidReceiveMessage(userInfo)
-        
-        // Print message ID.
-        if let messageID = userInfo[gcmMessageIDKey] {
-            print("Message ID: \(messageID)")
-        }
-        
-        // Print full message.
-        print(userInfo)
-        
-        completionHandler(UIBackgroundFetchResult.newData)
     }
 }
 
