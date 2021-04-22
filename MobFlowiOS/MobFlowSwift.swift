@@ -126,6 +126,23 @@ public class MobiFlowSwift: NSObject
         return false
     }
     
+    public func showAds() -> Bool
+    {
+        if self.isDeeplinkURL == 0
+        {
+            if self.schemeURL.hasPrefix(self.scheme) && self.addressURL.isEmpty
+            {
+                return true
+            }
+        }
+        else if UserDefaults.standard.value(forKey: "deeplinkURL") == nil
+        {
+            return true
+        }
+        
+        return false
+    }
+    
     public func getSTitle() -> String
     {
         let urlToOpen = URL(string: self.addressURL.removingPercentEncoding!)
