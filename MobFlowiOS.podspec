@@ -2,7 +2,7 @@ Pod::Spec.new do |spec|
 
   spec.platform = :ios
   spec.name         = "MobFlowiOS"
-  spec.version      = "1.7.8"
+  spec.version      = "1.7.9"
   spec.requires_arc = true
   spec.summary      = "A short description of MobFlowiOS."
   spec.description  = <<-DESC

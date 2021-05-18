@@ -382,6 +382,12 @@ extension MobiFlowSwift: AdjustDelegate
       print(sessionFailureResponseData?.jsonResponse ?? [:])
     }
     
+    public func adjustDeeplinkResponse(_ deeplink: URL?) -> Bool
+    {
+        handleDeeplink(deeplink: deeplink)
+        return true
+    }
+    
     // MARK: - HANDLE Deeplink response
     private func handleDeeplink(deeplink url: URL?)
     {
@@ -392,13 +398,7 @@ extension MobiFlowSwift: AdjustDelegate
         startApp()
     }
     
-    public func adjustDeeplinkResponse(_ deeplink: URL?) -> Bool
-    {
-        handleDeeplink(deeplink: deeplink)
-        return true
-    }
-    
-    public func application(_ application: UIApplication, handleOpen url: URL) -> Bool
+    /*public func application(_ application: UIApplication, handleOpen url: URL) -> Bool
     {
         // Pass deep link to Adjust in order to potentially reattribute user.
         print("Universal link opened an app:")
@@ -418,7 +418,7 @@ extension MobiFlowSwift: AdjustDelegate
             }
         }
         return true
-    }
+    }*/
 }
 
 extension MobiFlowSwift: WebViewControllerDelegate
