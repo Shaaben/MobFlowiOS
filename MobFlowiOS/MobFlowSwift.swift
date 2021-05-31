@@ -117,7 +117,7 @@ public class MobiFlowSwift: NSObject
         }
     }
     
-    public func shouldShowPButton() -> Bool
+    @objc public func shouldShowPButton() -> Bool
     {
         if !self.addressURL.isEmpty
         {
@@ -126,7 +126,7 @@ public class MobiFlowSwift: NSObject
         return false
     }
     
-    public func showAds() -> Bool
+    @objc public func showAds() -> Bool
     {
         if self.isDeeplinkURL == 0
         {
@@ -143,7 +143,7 @@ public class MobiFlowSwift: NSObject
         return false
     }
     
-    public func getSTitle() -> String
+    @objc public func getSTitle() -> String
     {
         let urlToOpen = URL(string: self.addressURL.removingPercentEncoding!)
         if(urlToOpen?.query != nil)
@@ -194,7 +194,7 @@ public class MobiFlowSwift: NSObject
         return webView
     }
     
-    public func openWebView()
+    @objc public func openWebView()
     {
         let urlToOpen = URL(string: self.addressURL.removingPercentEncoding!)
         if (urlToOpen != nil)
