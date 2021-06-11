@@ -25,6 +25,6 @@ Pod::Spec.new do |spec|
   spec.source_files  = "MobFlowiOS/*.{swift}"
   spec.resources = "MobFlowiOS/*.{storyboard,xib,xcassets,lproj,png}"
   spec.swift_version = '5'
-  spec.ios.deployment_target = '12.0'
+  spec.ios.deployment_target = '14.0'
 
 end
