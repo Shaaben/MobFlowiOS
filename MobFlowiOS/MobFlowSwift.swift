@@ -10,6 +10,8 @@ import Adjust
 import FirebaseCore
 import FirebaseMessaging
 import AppTrackingTransparency
+import Branch
+import AdSupport
 
 public protocol MobiFlowDelegate
 {
@@ -18,11 +20,14 @@ public protocol MobiFlowDelegate
 
 public class MobiFlowSwift: NSObject
 {
+    var isBranch = 0
+    var isAdjust = 0
     var isDeeplinkURL = 0
     var scheme = ""
     var endpoint = ""
     var adjAppToken = ""
     var adjPushToken = ""
+    var branchKey = ""
     var customURL = ""
     var schemeURL = ""
     var addressURL = ""
@@ -34,27 +39,43 @@ public class MobiFlowSwift: NSObject
     public var tintColor = UIColor.black
     public var hideToolbar = false
 
-    public init(isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, adjPushToken: String)
+    public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, adjPushToken: String, branchKey: String)
     {
         super.init()
         
+        self.isBranch = isBranch
+        self.isAdjust = isAdjust
         self.isDeeplinkURL = isDeeplinkURL
         self.scheme = scheme
         self.endpoint = endpoint
         self.adjAppToken = adjAppToken
         self.adjPushToken = adjPushToken
-        
+        self.branchKey = branchKey
+
         FirebaseApp.configure()
         Messaging.messaging().delegate = self
         UNUserNotificationCenter.current().delegate = self
 
-        let environment = ADJEnvironmentProduction
-        let adjustConfig = ADJConfig(appToken: self.adjAppToken, environment: environment)
-        adjustConfig?.sendInBackground = true
-        adjustConfig?.delegate = self
-        let uuid = UIDevice.current.identifierForVendor!.uuidString
-        Adjust.addSessionCallbackParameter("App_To_Adjust_DeviceId", value: uuid)
-        Adjust.appDidLaunch(adjustConfig)
+        if self.isBranch == 1
+        {
+            Branch.setUseTestBranchKey(true)
+            Branch.getInstance(self.branchKey).enableLogging()
+            let uuid = UIDevice.current.identifierForVendor!.uuidString
+            Branch.getInstance(self.branchKey).setRequestMetadataKey("app_to_branch_device_id", value: uuid)
+            let bundleIdentifier = Bundle.main.bundleIdentifier
+            Branch.getInstance(self.branchKey).setRequestMetadataKey("package_id", value: bundleIdentifier)
+        }
+        
+        if self.isAdjust == 1
+        {
+            let environment = ADJEnvironmentProduction
+            let adjustConfig = ADJConfig(appToken: self.adjAppToken, environment: environment)
+            adjustConfig?.sendInBackground = true
+            adjustConfig?.delegate = self
+            let uuid = UIDevice.current.identifierForVendor!.uuidString
+            Adjust.addSessionCallbackParameter("App_To_Adjust_DeviceId", value: uuid)
+            Adjust.appDidLaunch(adjustConfig)
+        }
 
         UIApplication.shared.registerForRemoteNotifications()
     }
@@ -162,8 +183,21 @@ public class MobiFlowSwift: NSObject
         let lang = Locale.current.languageCode ?? ""
         let packageName = Bundle.main.bundleIdentifier ?? ""
         let uuid = UIDevice.current.identifierForVendor!.uuidString
-        let adid = Adjust.adid() ?? ""
-        let idfa = Adjust.idfa() ?? ""
+        var adid = ""
+        var idfa = ""
+        if self.isBranch == 1
+        {
+            if ATTrackingManager.trackingAuthorizationStatus == .authorized
+            {
+                idfa = ASIdentifierManager.shared().advertisingIdentifier.uuidString
+            }
+        }
+        if self.isAdjust == 1
+        {
+            adid = Adjust.adid() ?? ""
+            idfa = Adjust.idfa() ?? ""
+        }
+        
         let fScheme = self.scheme.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
         var d = ""
         if self.isDeeplinkURL == 1
@@ -268,8 +302,45 @@ extension MobiFlowSwift: UIApplicationDelegate
 {
     public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool
     {
-
+        if self.isBranch == 1
+        {
+            Branch.getInstance(self.branchKey).initSession(launchOptions: launchOptions) { (params, error) in
+                let referringParams = Branch.getInstance(self.branchKey).getLatestReferringParams()
+                let referringLink = referringParams!["~referring_link"] as? String ?? ""
+                if !referringLink.isEmpty
+                {
+                    UserDefaults.standard.set(referringLink, forKey: "deeplinkURL")
+                }
+            }
+        }
+        
         return true
+    }
+    
+    public func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool
+    {
+        if self.isBranch == 1
+        {
+            return Branch.getInstance(self.branchKey).application(app, open: url, options: options)
+        }
+        return false
+    }
+    
+    public func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void)
+    {
+        if self.isBranch == 1
+        {
+            Branch.getInstance(self.branchKey).handlePushNotification(userInfo)
+        }
+    }
+    
+    public func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool
+    {
+        if self.isBranch == 1
+        {
+            return Branch.getInstance(self.branchKey).continue(userActivity)
+        }
+        return false
     }
 }
 
@@ -280,17 +351,29 @@ extension MobiFlowSwift: MessagingDelegate
         let userDefault = UserDefaults.standard
         userDefault.set(fcmToken, forKey: "TOKEN")
         userDefault.synchronize()
-        
-        Adjust.setPushToken(fcmToken!)
-        print("FCM "+fcmToken!)
 
-        let adjustEvent = ADJEvent(eventToken: adjPushToken)
-        adjustEvent?.addCallbackParameter("eventValue", value: fcmToken ?? "")
-        let deeplink = UserDefaults.standard.object(forKey: "deeplinkURL") as? String
-        adjustEvent?.addCallbackParameter("deeplink", value: deeplink ?? "")
-        let uuid = UIDevice.current.identifierForVendor!.uuidString
-        adjustEvent?.addCallbackParameter("App_To_Adjust_DeviceId", value: uuid);
-        Adjust.trackEvent(adjustEvent)
+        if self.isBranch == 1
+        {
+            let deeplink = UserDefaults.standard.object(forKey: "deeplinkURL") as? String ?? ""
+            let eventValue = fcmToken ?? ""
+            let event = BranchEvent(name: "PUSH_TOKEN")
+            event.customData = ["deeplink": deeplink, "eventValue": eventValue]
+            event.logEvent()
+        }
+        
+        if self.isAdjust == 1
+        {
+            Adjust.setPushToken(fcmToken!)
+            print("FCM "+fcmToken!)
+            
+            let adjustEvent = ADJEvent(eventToken: adjPushToken)
+            adjustEvent?.addCallbackParameter("eventValue", value: fcmToken ?? "")
+            let deeplink = UserDefaults.standard.object(forKey: "deeplinkURL") as? String
+            adjustEvent?.addCallbackParameter("deeplink", value: deeplink ?? "")
+            let uuid = UIDevice.current.identifierForVendor!.uuidString
+            adjustEvent?.addCallbackParameter("App_To_Adjust_DeviceId", value: uuid);
+            Adjust.trackEvent(adjustEvent)
+        }
     }
 }
 
