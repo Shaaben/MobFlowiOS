@@ -178,6 +178,11 @@ public class MobiFlowSwift: NSObject
         return ""
     }
     
+    @objc public func getAddressURL() -> String
+    {
+        return self.addressURL.removingPercentEncoding!
+    }
+    
     func createCustomURL()
     {
         let lang = Locale.current.languageCode ?? ""
