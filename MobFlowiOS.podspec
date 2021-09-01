@@ -2,7 +2,7 @@ Pod::Spec.new do |spec|
 
   spec.platform = :ios
   spec.name         = "MobFlowiOS"
-  spec.version      = "1.8.2"
+  spec.version      = "1.8.3"
   spec.requires_arc = true
   spec.summary      = "A short description of MobFlowiOS."
   spec.description  = <<-DESC
@@ -22,6 +22,7 @@ Pod::Spec.new do |spec|
   spec.dependency 'Firebase/Analytics'
   spec.dependency 'Firebase/Messaging'
   spec.dependency 'Branch'
+  spec.dependency 'Firebase/RemoteConfig'
   spec.source_files  = "MobFlowiOS/*.{swift}"
   spec.resources = "MobFlowiOS/*.{storyboard,xib,xcassets,lproj,png}"
   spec.swift_version = '5'

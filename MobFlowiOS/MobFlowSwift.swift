@@ -12,6 +12,7 @@ import FirebaseMessaging
 import AppTrackingTransparency
 import Branch
 import AdSupport
+import FirebaseRemoteConfig
 
 public protocol MobiFlowDelegate
 {
@@ -22,7 +23,9 @@ public class MobiFlowSwift: NSObject
 {
     var isBranch = 0
     var isAdjust = 0
-    var isDeeplinkURL = 0
+    var enabled = 0
+    var ads = 0
+    var mode = "organic"
     var scheme = ""
     var endpoint = ""
     var adjAppToken = ""
@@ -39,19 +42,46 @@ public class MobiFlowSwift: NSObject
     public var tintColor = UIColor.black
     public var hideToolbar = false
 
-    public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, adjPushToken: String, branchKey: String)
+    public init(isBranch: Int, isAdjust: Int, scheme: String, adjAppToken: String, adjPushToken: String, branchKey: String, enabled: Int, ads: Int, endpoint: String, mode: String)
     {
         super.init()
         
         self.isBranch = isBranch
         self.isAdjust = isAdjust
-        self.isDeeplinkURL = isDeeplinkURL
+        //self.isDeeplinkURL = isDeeplinkURL
         self.scheme = scheme
-        self.endpoint = endpoint
+        //self.endpoint = endpoint
         self.adjAppToken = adjAppToken
         self.adjPushToken = adjPushToken
         self.branchKey = branchKey
-
+        self.enabled = enabled
+        self.ads = ads
+        self.endpoint = endpoint
+        self.mode = mode
+        
+        let fileManager = FileManager.default
+        let documentDirectory = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as String
+        let path = documentDirectory.appending("/RemoteConfigDefaults.plist")
+        if (!fileManager.fileExists(atPath: path))
+        {
+            let bundleID = Bundle.main.bundleIdentifier!
+            let dic = [bundleID: ["enabled": self.enabled, "ads": self.ads, "endpoint": self.endpoint, "mode": self.mode]]
+            let plist = NSDictionary(dictionary: dic)
+            let success:Bool = plist.write(toFile: path, atomically: true)
+            if success
+            {
+                print("file has been created!")
+            }
+            else
+            {
+                print("unable to create the file")
+            }
+        }
+        else
+        {
+            print("file already exist")
+        }
+        
         FirebaseApp.configure()
         Messaging.messaging().delegate = self
         UNUserNotificationCenter.current().delegate = self
@@ -82,13 +112,81 @@ public class MobiFlowSwift: NSObject
     
     public func start()
     {
-        if self.isDeeplinkURL == 0
-        {
-            self.startApp()
-        }
-        else if self.isDeeplinkURL == 1
-        {
-            timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(updateCounting), userInfo: nil, repeats: true)
+        let remoteConfig = RemoteConfig.remoteConfig()
+        let settings = RemoteConfigSettings()
+        settings.minimumFetchInterval = 0
+        remoteConfig.configSettings = settings
+        remoteConfig.setDefaults(fromPlist: "RemoteConfigDefaults")
+        remoteConfig.fetch { [self] (status, error) -> Void in
+            if status == .success
+            {
+                print("Config fetched!")
+                remoteConfig.activate { [self] changed, error in
+                    let status_value = remoteConfig.configValue(forKey: "status").jsonValue as! [String: Any]
+                    let bundleID = Bundle.main.bundleIdentifier!
+                    let dic = status_value[bundleID] as! [String: Any]
+                    let mode = dic["mode"] as! String
+                    self.ads = dic["ads"] as! Int
+                    if (dic["endpoint"] as! String).hasPrefix("http")
+                    {
+                        self.endpoint = dic["endpoint"] as! String
+                    }
+                    else
+                    {
+                        self.endpoint = "https://\(dic["endpoint"] as! String)"
+                    }
+                    if dic["enabled"] as! Bool
+                    {
+                        if mode == "organic"
+                        {
+                            self.startApp()
+                        }
+                        else if mode == "deeplink"
+                        {
+                            DispatchQueue.main.async {
+                                self.timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(updateCounting), userInfo: nil, repeats: true)
+                            }
+                        }
+                    }
+                    else
+                    {
+                        self.requestPremission()
+                        self.delegate?.present(dic: [String: Any]())
+                    }
+                }
+            }
+            else
+            {
+                let status_value = remoteConfig.configValue(forKey: "status").jsonValue as! [String: Any]
+                let bundleID = Bundle.main.bundleIdentifier!
+                let dic = status_value[bundleID] as! [String: Any]
+                let mode = dic["mode"] as! String
+                self.ads = dic["ads"] as! Int
+                if (dic["endpoint"] as! String).hasPrefix("http")
+                {
+                    self.endpoint = dic["endpoint"] as! String
+                }
+                else
+                {
+                    self.endpoint = "https://\(dic["endpoint"] as! String)"
+                }
+                if dic["enabled"] as! Bool
+                {
+                    if self.mode == "organic"
+                    {
+                        self.startApp()
+                    }
+                    else if self.mode == "deeplink"
+                    {
+                        self.timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(updateCounting), userInfo: nil, repeats: true)
+                    }
+                }
+                else
+                {
+                    self.requestPremission()
+                    self.delegate?.present(dic: [String: Any]())
+                }
+            }
         }
     }
     
@@ -149,14 +247,14 @@ public class MobiFlowSwift: NSObject
     
     @objc public func showAds() -> Bool
     {
-        if self.isDeeplinkURL == 0
+        if mode == "organic"
         {
-            if self.schemeURL.hasPrefix(self.scheme) && self.addressURL.isEmpty
+            if self.schemeURL.hasPrefix(self.scheme) && self.addressURL.isEmpty && self.ads == 1
             {
                 return true
             }
         }
-        else if UserDefaults.standard.value(forKey: "deeplinkURL") == nil
+        else if UserDefaults.standard.value(forKey: "deeplinkURL") == nil && self.ads == 1
         {
             return true
         }
@@ -205,7 +303,7 @@ public class MobiFlowSwift: NSObject
         
         let fScheme = self.scheme.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
         var d = ""
-        if self.isDeeplinkURL == 1
+        if mode == "deeplink"
         {
             let deeplinkURL = UserDefaults.standard.value(forKey: "deeplinkURL") as? String
             d = deeplinkURL!.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
@@ -525,46 +623,55 @@ extension MobiFlowSwift: WebViewControllerDelegate
     
     func startApp()
     {
-        if self.isDeeplinkURL == 0 || (self.isDeeplinkURL == 1 && UserDefaults.standard.object(forKey: "deeplinkURL") != nil)
+        // your code here
+        if mode == "organic" || (mode == "deeplink" && UserDefaults.standard.object(forKey: "deeplinkURL") != nil)
         {
-            if schemeURL.isEmpty
+            if self.schemeURL.isEmpty
             {
                 if self.customURL.isEmpty
                 {
                     self.createCustomURL()
                 }
-                let webView = initWebViewURL()
-                self.present(webView: webView)
+                DispatchQueue.main.async {
+                    let webView = self.initWebViewURL()
+                    self.present(webView: webView)
+                }
             }
             else if !self.addressURL.isEmpty
             {
-                let urlToOpen = URL(string: self.addressURL.removingPercentEncoding!)
-                let bundle = Bundle(for: type(of:self))
-                let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
-                let webView = storyBoard.instantiateViewController(withIdentifier: "WebViewController") as! WebViewController
-                webView.urlToOpen = urlToOpen!
-                webView.schemeURL = self.schemeURL
-                webView.addressURL = self.addressURL
-                webView.delegate = self
-                webView.tintColor = self.tintColor
-                webView.backgroundColor = self.backgroundColor
-                self.present(webView: webView)
+                DispatchQueue.main.async {
+                    let urlToOpen = URL(string: self.addressURL.removingPercentEncoding!)
+                    let bundle = Bundle(for: type(of:self))
+                    let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
+                    let webView = storyBoard.instantiateViewController(withIdentifier: "WebViewController") as! WebViewController
+                    webView.urlToOpen = urlToOpen!
+                    webView.schemeURL = self.schemeURL
+                    webView.addressURL = self.addressURL
+                    webView.delegate = self
+                    webView.tintColor = self.tintColor
+                    webView.backgroundColor = self.backgroundColor
+                    self.present(webView: webView)
+                }
             }
             else
             {
-                self.requestPremission()
-                self.delegate?.present(dic: [String: Any]())
-                let url = URL(string: self.schemeURL)
-                if UIApplication.shared.canOpenURL(url!)
-                {
-                    UIApplication.shared.open(url!)
+                DispatchQueue.main.async {
+                    self.requestPremission()
+                    self.delegate?.present(dic: [String: Any]())
+                    let url = URL(string: self.schemeURL)
+                    if UIApplication.shared.canOpenURL(url!)
+                    {
+                        UIApplication.shared.open(url!)
+                    }
                 }
             }
         }
         else
         {
-            self.requestPremission()
-            self.delegate?.present(dic: [String: Any]())
+            DispatchQueue.main.async {
+                self.requestPremission()
+                self.delegate?.present(dic: [String: Any]())
+            }
         }
     }
 }

@@ -86,8 +86,8 @@
 				AC9056E1260DD6E90084E14F /* close.png */,
 				AC9056E2260DD6E90084E14F /* Main.storyboard */,
 				AC9056DB260DD6C70084E14F /* MobFlowSwift.swift */,
-				AC9056DA260DD6C70084E14F /* NoInternetViewController.swift */,
 				AC9056DC260DD6C70084E14F /* WebViewController.swift */,
+				AC9056DA260DD6C70084E14F /* NoInternetViewController.swift */,
 				AC9056C1260DD3E30084E14F /* MobFlowiOS.h */,
 				AC9056C2260DD3E30084E14F /* Info.plist */,
 			);

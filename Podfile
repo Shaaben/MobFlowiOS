@@ -11,5 +11,6 @@ target 'MobFlowiOS' do
   pod 'Firebase'
   pod 'Firebase/Analytics'
   pod 'Firebase/Messaging'
+  pod 'Firebase/RemoteConfig'
   pod 'Branch'
 end
