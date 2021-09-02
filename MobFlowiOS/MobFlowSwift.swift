@@ -194,34 +194,71 @@ public class MobiFlowSwift: NSObject
             }
             else
             {
-                let status_value = remoteConfig.configValue(forKey: "status").jsonValue as! [String: Any]
-                let bundleID = Bundle.main.bundleIdentifier!
-                let dic = status_value[bundleID] as! [String: Any]
-                self.mode = dic["mode"] as! String
-                self.ads = dic["ads"] as! Int
-                if (dic["endpoint"] as! String).hasPrefix("http")
+                if((remoteConfig.configValue(forKey: "status").jsonValue) != nil)
                 {
-                    self.endpoint = dic["endpoint"] as! String
+                    let status_value = remoteConfig.configValue(forKey: "status").jsonValue as! [String: Any]
+                    let bundleID = Bundle.main.bundleIdentifier!
+                    let dic = status_value[bundleID] as! [String: Any]
+                    self.mode = dic["mode"] as! String
+                    self.ads = dic["ads"] as! Int
+                    if (dic["endpoint"] as! String).hasPrefix("http")
+                    {
+                        self.endpoint = dic["endpoint"] as! String
+                    }
+                    else
+                    {
+                        self.endpoint = "https://\(dic["endpoint"] as! String)"
+                    }
+                    if dic["enabled"] as! Bool
+                    {
+                        if self.mode == "organic"
+                        {
+                            self.startApp()
+                        }
+                        else if self.mode == "deeplink"
+                        {
+                            self.timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(updateCounting), userInfo: nil, repeats: true)
+                        }
+                    }
+                    else
+                    {
+                        self.requestPremission()
+                        self.delegate?.present(dic: [String: Any]())
+                    }
                 }
                 else
                 {
-                    self.endpoint = "https://\(dic["endpoint"] as! String)"
-                }
-                if dic["enabled"] as! Bool
-                {
-                    if self.mode == "organic"
+                    let documentDirectory = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as String
+                    let path = documentDirectory.appending("/RemoteConfigDefaults.plist")
+                    let status_value = NSDictionary(contentsOfFile: path)
+                    let bundleID = Bundle.main.bundleIdentifier!
+                    let dic = status_value![bundleID] as! [String: Any]
+                    self.mode = dic["mode"] as! String
+                    self.ads = dic["ads"] as! Int
+                    if (dic["endpoint"] as! String).hasPrefix("http")
                     {
-                        self.startApp()
+                        self.endpoint = dic["endpoint"] as! String
                     }
-                    else if self.mode == "deeplink"
+                    else
                     {
-                        self.timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(updateCounting), userInfo: nil, repeats: true)
+                        self.endpoint = "https://\(dic["endpoint"] as! String)"
                     }
-                }
-                else
-                {
-                    self.requestPremission()
-                    self.delegate?.present(dic: [String: Any]())
+                    if dic["enabled"] as! Bool
+                    {
+                        if self.mode == "organic"
+                        {
+                            self.startApp()
+                        }
+                        else if self.mode == "deeplink"
+                        {
+                            self.timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(updateCounting), userInfo: nil, repeats: true)
+                        }
+                    }
+                    else
+                    {
+                        self.requestPremission()
+                        self.delegate?.present(dic: [String: Any]())
+                    }
                 }
             }
         }
