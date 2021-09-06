@@ -323,14 +323,21 @@ public class MobiFlowSwift: NSObject
     {
         if mode == "organic"
         {
-            if self.schemeURL.hasPrefix(self.scheme) && self.addressURL.isEmpty && self.ads == 1
+            if self.enabled == 1 && self.schemeURL.hasPrefix(self.scheme) && self.addressURL.isEmpty && self.ads == 1
+            {
+                return true
+            }
+            else if self.enabled == 0 && self.ads == 1
             {
                 return true
             }
         }
-        else if UserDefaults.standard.value(forKey: "deeplinkURL") == nil && self.ads == 1
+        else if mode == "deeplink"
         {
-            return true
+            if UserDefaults.standard.value(forKey: "deeplinkURL") == nil && self.ads == 1
+            {
+                return true
+            }
         }
         
         return false
