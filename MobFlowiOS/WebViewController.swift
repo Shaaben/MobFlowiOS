@@ -14,6 +14,7 @@ protocol WebViewControllerDelegate
     func set(schemeURL: String, addressURL: String)
     func startApp()
     func present(dic: [String: Any])
+    func set(reachable: Bool)
 }
 
 public class WebViewController: UIViewController
@@ -164,7 +165,16 @@ extension WebViewController: WKNavigationDelegate
         let view = storyBoard.instantiateViewController(withIdentifier: "NoInternetViewController") as! NoInternetViewController
         view.backgroundColor = self.backgroundColor
         view.tintColor = self.tintColor
+        view.delegate = self
         self.present(view, animated: true, completion: nil)
+    }
+}
+
+extension WebViewController: NoInternetControllerDelegate
+{
+    func set(reachable: Bool)
+    {
+        self.delegate?.set(reachable: reachable)
     }
 }
 
@@ -189,4 +199,3 @@ private extension URL
         return queryStrings
     }
 }
-

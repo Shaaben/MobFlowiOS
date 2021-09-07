@@ -38,6 +38,7 @@ public class MobiFlowSwift: NSObject
     public var delegate : MobiFlowDelegate? = nil
     var counter = 0
     var timer = Timer()
+    var isReachable = true
     public var backgroundColor = UIColor.white
     public var tintColor = UIColor.black
     public var hideToolbar = false
@@ -115,6 +116,7 @@ public class MobiFlowSwift: NSObject
         let remoteConfig = RemoteConfig.remoteConfig()
         let settings = RemoteConfigSettings()
         settings.minimumFetchInterval = 0
+        settings.fetchTimeout = 10
         remoteConfig.configSettings = settings
         remoteConfig.setDefaults(fromPlist: "RemoteConfigDefaults")
         remoteConfig.fetch { [self] (status, error) -> Void in
@@ -152,8 +154,10 @@ public class MobiFlowSwift: NSObject
                         }
                         else
                         {
-                            self.requestPremission()
-                            self.delegate?.present(dic: [String: Any]())
+                            DispatchQueue.main.async {
+                                self.requestPremission()
+                                self.delegate?.present(dic: [String: Any]())
+                            }
                         }
                     }
                     else
@@ -181,13 +185,17 @@ public class MobiFlowSwift: NSObject
                             }
                             else if self.mode == "deeplink"
                             {
-                                self.timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(updateCounting), userInfo: nil, repeats: true)
+                                DispatchQueue.main.async {
+                                    self.timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(updateCounting), userInfo: nil, repeats: true)
+                                }
                             }
                         }
                         else
                         {
-                            self.requestPremission()
-                            self.delegate?.present(dic: [String: Any]())
+                            DispatchQueue.main.async {
+                                self.requestPremission()
+                                self.delegate?.present(dic: [String: Any]())
+                            }
                         }
                     }
                 }
@@ -217,13 +225,17 @@ public class MobiFlowSwift: NSObject
                         }
                         else if self.mode == "deeplink"
                         {
-                            self.timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(updateCounting), userInfo: nil, repeats: true)
+                            DispatchQueue.main.async {
+                                self.timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(updateCounting), userInfo: nil, repeats: true)
+                            }
                         }
                     }
                     else
                     {
-                        self.requestPremission()
-                        self.delegate?.present(dic: [String: Any]())
+                        DispatchQueue.main.async {
+                            self.requestPremission()
+                            self.delegate?.present(dic: [String: Any]())
+                        }
                     }
                 }
                 else
@@ -251,13 +263,17 @@ public class MobiFlowSwift: NSObject
                         }
                         else if self.mode == "deeplink"
                         {
-                            self.timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(updateCounting), userInfo: nil, repeats: true)
+                            DispatchQueue.main.async {
+                                self.timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(updateCounting), userInfo: nil, repeats: true)
+                            }
                         }
                     }
                     else
                     {
-                        self.requestPremission()
-                        self.delegate?.present(dic: [String: Any]())
+                        DispatchQueue.main.async {
+                            self.requestPremission()
+                            self.delegate?.present(dic: [String: Any]())
+                        }
                     }
                 }
             }
@@ -690,6 +706,12 @@ extension MobiFlowSwift: AdjustDelegate
 
 extension MobiFlowSwift: WebViewControllerDelegate
 {
+    func set(reachable: Bool)
+    {
+        self.isReachable = reachable
+        self.start()
+    }
+    
     func present(dic: [String : Any])
     {
         self.requestPremission()
@@ -705,33 +727,48 @@ extension MobiFlowSwift: WebViewControllerDelegate
     func startApp()
     {
         // your code here
-        if mode == "organic" || (mode == "deeplink" && UserDefaults.standard.object(forKey: "deeplinkURL") != nil)
+        if isReachable
         {
-            if self.schemeURL.isEmpty
+            if mode == "organic" || (mode == "deeplink" && UserDefaults.standard.object(forKey: "deeplinkURL") != nil)
             {
-                if self.customURL.isEmpty
+                if self.schemeURL.isEmpty
                 {
-                    self.createCustomURL()
+                    if self.customURL.isEmpty
+                    {
+                        self.createCustomURL()
+                    }
+                    DispatchQueue.main.async {
+                        let webView = self.initWebViewURL()
+                        self.present(webView: webView)
+                    }
                 }
-                DispatchQueue.main.async {
-                    let webView = self.initWebViewURL()
-                    self.present(webView: webView)
+                else if !self.addressURL.isEmpty
+                {
+                    DispatchQueue.main.async {
+                        let urlToOpen = URL(string: self.addressURL.removingPercentEncoding!)
+                        let bundle = Bundle(for: type(of:self))
+                        let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
+                        let webView = storyBoard.instantiateViewController(withIdentifier: "WebViewController") as! WebViewController
+                        webView.urlToOpen = urlToOpen!
+                        webView.schemeURL = self.schemeURL
+                        webView.addressURL = self.addressURL
+                        webView.delegate = self
+                        webView.tintColor = self.tintColor
+                        webView.backgroundColor = self.backgroundColor
+                        self.present(webView: webView)
+                    }
                 }
-            }
-            else if !self.addressURL.isEmpty
-            {
-                DispatchQueue.main.async {
-                    let urlToOpen = URL(string: self.addressURL.removingPercentEncoding!)
-                    let bundle = Bundle(for: type(of:self))
-                    let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
-                    let webView = storyBoard.instantiateViewController(withIdentifier: "WebViewController") as! WebViewController
-                    webView.urlToOpen = urlToOpen!
-                    webView.schemeURL = self.schemeURL
-                    webView.addressURL = self.addressURL
-                    webView.delegate = self
-                    webView.tintColor = self.tintColor
-                    webView.backgroundColor = self.backgroundColor
-                    self.present(webView: webView)
+                else
+                {
+                    DispatchQueue.main.async {
+                        self.requestPremission()
+                        self.delegate?.present(dic: [String: Any]())
+                        let url = URL(string: self.schemeURL)
+                        if UIApplication.shared.canOpenURL(url!)
+                        {
+                            UIApplication.shared.open(url!)
+                        }
+                    }
                 }
             }
             else
@@ -739,19 +776,7 @@ extension MobiFlowSwift: WebViewControllerDelegate
                 DispatchQueue.main.async {
                     self.requestPremission()
                     self.delegate?.present(dic: [String: Any]())
-                    let url = URL(string: self.schemeURL)
-                    if UIApplication.shared.canOpenURL(url!)
-                    {
-                        UIApplication.shared.open(url!)
-                    }
                 }
-            }
-        }
-        else
-        {
-            DispatchQueue.main.async {
-                self.requestPremission()
-                self.delegate?.present(dic: [String: Any]())
             }
         }
     }

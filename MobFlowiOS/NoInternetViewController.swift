@@ -8,6 +8,11 @@
 import UIKit
 import Reachability
 
+protocol NoInternetControllerDelegate
+{
+    func set(reachable: Bool)
+}
+
 public class NoInternetViewController: UIViewController
 {
     @IBOutlet weak private var retryBtn: UIButton! {
@@ -20,6 +25,7 @@ public class NoInternetViewController: UIViewController
     let reachability = try! Reachability(hostname: "google.com")
     var backgroundColor = UIColor.white
     var tintColor = UIColor.black
+    var delegate : NoInternetControllerDelegate? = nil
 
     public override func viewDidLoad()
     {
@@ -43,15 +49,19 @@ public class NoInternetViewController: UIViewController
       {
       case .wifi:
         self.isReachable = true
+        self.delegate?.set(reachable: self.isReachable)
         break
       case .cellular:
         self.isReachable = true
+        self.delegate?.set(reachable: self.isReachable)
         break
       case .unavailable:
         self.isReachable = false
+        self.delegate?.set(reachable: self.isReachable)
         break
       case .none:
         self.isReachable = false
+        self.delegate?.set(reachable: self.isReachable)
         break
       }
     }
