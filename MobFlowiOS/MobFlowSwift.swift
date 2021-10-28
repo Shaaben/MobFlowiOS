@@ -13,7 +13,7 @@ import AppTrackingTransparency
 import Branch
 import AdSupport
 
-public protocol MobiFlowDelegate
+@objc public protocol MobiFlowDelegate
 {
     func present(dic: [String: Any])
 }
@@ -39,7 +39,7 @@ public class MobiFlowSwift: NSObject
     public var tintColor = UIColor.black
     public var hideToolbar = false
 
-    public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, adjPushToken: String, branchKey: String)
+    @objc public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, adjPushToken: String, branchKey: String, faid: String)
     {
         super.init()
         
@@ -74,13 +74,14 @@ public class MobiFlowSwift: NSObject
             adjustConfig?.delegate = self
             let uuid = UIDevice.current.identifierForVendor!.uuidString
             Adjust.addSessionCallbackParameter("App_To_Adjust_DeviceId", value: uuid)
+            Adjust.addSessionCallbackParameter("Firebase_App_InstanceId", value: faid)
             Adjust.appDidLaunch(adjustConfig)
         }
 
         UIApplication.shared.registerForRemoteNotifications()
     }
     
-    public func start()
+    @objc public func start()
     {
         if self.isDeeplinkURL == 0
         {
