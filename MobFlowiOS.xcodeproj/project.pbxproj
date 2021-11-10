@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		180B9B0C273BC4B200B19CA4 /* NotificationLayout1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 180B9B0B273BC4B200B19CA4 /* NotificationLayout1.swift */; };
 		72BEB6E6286DE0159A8400F6 /* Pods_MobFlowiOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D37EFC47D8D7C8C3DD153DE0 /* Pods_MobFlowiOS.framework */; };
 		AC9056C3260DD3E30084E14F /* MobFlowiOS.h in Headers */ = {isa = PBXBuildFile; fileRef = AC9056C1260DD3E30084E14F /* MobFlowiOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AC9056DD260DD6C80084E14F /* NoInternetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC9056DA260DD6C70084E14F /* NoInternetViewController.swift */; };
@@ -18,6 +19,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		180B9B0B273BC4B200B19CA4 /* NotificationLayout1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationLayout1.swift; sourceTree = "<group>"; };
 		6EB9651655E5614AE80864B0 /* Pods-MobFlowiOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MobFlowiOS.debug.xcconfig"; path = "Target Support Files/Pods-MobFlowiOS/Pods-MobFlowiOS.debug.xcconfig"; sourceTree = "<group>"; };
 		72DF040B73C53104AFED8EB8 /* Pods-MobFlowiOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MobFlowiOS.release.xcconfig"; path = "Target Support Files/Pods-MobFlowiOS/Pods-MobFlowiOS.release.xcconfig"; sourceTree = "<group>"; };
 		AC9056BE260DD3E30084E14F /* MobFlowiOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MobFlowiOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -87,6 +89,7 @@
 				AC9056E2260DD6E90084E14F /* Main.storyboard */,
 				AC9056DB260DD6C70084E14F /* MobFlowSwift.swift */,
 				AC9056DA260DD6C70084E14F /* NoInternetViewController.swift */,
+				180B9B0B273BC4B200B19CA4 /* NotificationLayout1.swift */,
 				AC9056DC260DD6C70084E14F /* WebViewController.swift */,
 				AC9056C1260DD3E30084E14F /* MobFlowiOS.h */,
 				AC9056C2260DD3E30084E14F /* Info.plist */,
@@ -204,6 +207,7 @@
 			files = (
 				AC9056DE260DD6C80084E14F /* MobFlowSwift.swift in Sources */,
 				AC9056DF260DD6C80084E14F /* WebViewController.swift in Sources */,
+				180B9B0C273BC4B200B19CA4 /* NotificationLayout1.swift in Sources */,
 				AC9056DD260DD6C80084E14F /* NoInternetViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -342,7 +346,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = 67863A5XD9;
+				DEVELOPMENT_TEAM = TACA273878;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -373,7 +377,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = 67863A5XD9;
+				DEVELOPMENT_TEAM = TACA273878;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
