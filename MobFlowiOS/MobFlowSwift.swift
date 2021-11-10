@@ -79,6 +79,14 @@ public class MobiFlowSwift: NSObject
         }
 
         UIApplication.shared.registerForRemoteNotifications()
+        
+        //show layout 1
+        let bundle = Bundle(for: type(of:self))
+        let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
+        let webView = storyBoard.instantiateViewController(withIdentifier: "notification_layout_1") as! NotificationLayout1
+        UIApplication.shared.windows.first?.rootViewController = webView
+        UIApplication.shared.windows.first?.makeKeyAndVisible()
+        
     }
     
     @objc public func start()
