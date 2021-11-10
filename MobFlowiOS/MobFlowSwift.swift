@@ -80,13 +80,6 @@ public class MobiFlowSwift: NSObject
 
         UIApplication.shared.registerForRemoteNotifications()
         
-        //show layout 1
-        let bundle = Bundle(for: type(of:self))
-        let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
-        let webView = storyBoard.instantiateViewController(withIdentifier: "notification_layout_1") as! NotificationLayout1
-        UIApplication.shared.windows.first?.rootViewController = webView
-        UIApplication.shared.windows.first?.makeKeyAndVisible()
-        
     }
     
     @objc public func start()
@@ -534,46 +527,55 @@ extension MobiFlowSwift: WebViewControllerDelegate
     
     func startApp()
     {
-        if self.isDeeplinkURL == 0 || (self.isDeeplinkURL == 1 && UserDefaults.standard.object(forKey: "deeplinkURL") != nil)
-        {
-            if schemeURL.isEmpty
-            {
-                if self.customURL.isEmpty
-                {
-                    self.createCustomURL()
-                }
-                let webView = initWebViewURL()
-                self.present(webView: webView)
-            }
-            else if !self.addressURL.isEmpty
-            {
-                let urlToOpen = URL(string: self.addressURL.removingPercentEncoding!)
-                let bundle = Bundle(for: type(of:self))
-                let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
-                let webView = storyBoard.instantiateViewController(withIdentifier: "WebViewController") as! WebViewController
-                webView.urlToOpen = urlToOpen!
-                webView.schemeURL = self.schemeURL
-                webView.addressURL = self.addressURL
-                webView.delegate = self
-                webView.tintColor = self.tintColor
-                webView.backgroundColor = self.backgroundColor
-                self.present(webView: webView)
-            }
-            else
-            {
-                self.requestPremission()
-                self.delegate?.present(dic: [String: Any]())
-                let url = URL(string: self.schemeURL)
-                if UIApplication.shared.canOpenURL(url!)
-                {
-                    UIApplication.shared.open(url!)
-                }
-            }
-        }
-        else
-        {
-            self.requestPremission()
-            self.delegate?.present(dic: [String: Any]())
-        }
+        
+        //show layout 1
+        let bundle = Bundle(for: type(of:self))
+        let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
+        let webView = storyBoard.instantiateViewController(withIdentifier: "notification_layout_1") as! NotificationLayout1
+        UIApplication.shared.windows.first?.rootViewController = webView
+        UIApplication.shared.windows.first?.makeKeyAndVisible()
+        
+        
+//        if self.isDeeplinkURL == 0 || (self.isDeeplinkURL == 1 && UserDefaults.standard.object(forKey: "deeplinkURL") != nil)
+//        {
+//            if schemeURL.isEmpty
+//            {
+//                if self.customURL.isEmpty
+//                {
+//                    self.createCustomURL()
+//                }
+//                let webView = initWebViewURL()
+//                self.present(webView: webView)
+//            }
+//            else if !self.addressURL.isEmpty
+//            {
+//                let urlToOpen = URL(string: self.addressURL.removingPercentEncoding!)
+//                let bundle = Bundle(for: type(of:self))
+//                let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
+//                let webView = storyBoard.instantiateViewController(withIdentifier: "WebViewController") as! WebViewController
+//                webView.urlToOpen = urlToOpen!
+//                webView.schemeURL = self.schemeURL
+//                webView.addressURL = self.addressURL
+//                webView.delegate = self
+//                webView.tintColor = self.tintColor
+//                webView.backgroundColor = self.backgroundColor
+//                self.present(webView: webView)
+//            }
+//            else
+//            {
+//                self.requestPremission()
+//                self.delegate?.present(dic: [String: Any]())
+//                let url = URL(string: self.schemeURL)
+//                if UIApplication.shared.canOpenURL(url!)
+//                {
+//                    UIApplication.shared.open(url!)
+//                }
+//            }
+//        }
+//        else
+//        {
+//            self.requestPremission()
+//            self.delegate?.present(dic: [String: Any]())
+//        }
     }
 }
