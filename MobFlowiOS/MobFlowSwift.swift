@@ -428,6 +428,29 @@ extension MobiFlowSwift : UNUserNotificationCenterDelegate
         let userInfoLink = userInfo["link"] as? String ?? ""
         let userInfoDeeplink = userInfo["deeplink"] as? String ?? ""
         let action_id = userInfo["action_id"] as? String ?? ""
+        let bodyInfo = userInfo["body"] as? String ?? ""
+        let show_landing_page = userInfo["show_landing_page"] as? String ?? ""
+        let landing_layout = userInfo["landing_layout"] as? String ?? ""
+        let show_close_button = userInfo["show_close_button"] as? String ?? ""
+        let layoutImage = userInfo["image"] as? String ?? ""
+        let show_toolbar_webview = userInfo["show_toolbar_webview"] as? String ?? ""
+ 
+        print("user Info: \(userInfo)")
+        
+//        old flow
+//        if (action_id == "1") {
+//            if (userInfoLink != "") {
+//                let url = URL(string: userInfoLink)
+//                if (url != nil) {
+//                    UIApplication.shared.open(url!, options: [:], completionHandler: nil)
+//                }
+//            } else if (userInfoDeeplink != "") {
+//                let url = URL(string: userInfoDeeplink)
+//                if (url != nil) {
+//                    UIApplication.shared.open(url!, options: [:], completionHandler: nil)
+//                }
+//            }
+//        }
         
         if (action_id == "1") {
             if (userInfoLink != "") {
