@@ -416,7 +416,7 @@ extension MobiFlowSwift : UNUserNotificationCenterDelegate
         }*/
         
         // Change this to your preferred presentation option
-        completionHandler([[.alert, .sound]])
+        completionHandler([[.banner, .sound]])
     }
     
     public func userNotificationCenter(_ center: UNUserNotificationCenter,
