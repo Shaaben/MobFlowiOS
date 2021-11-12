@@ -14,14 +14,21 @@ public class NotificationLayout1: UIViewController {
     @IBOutlet weak private var layoutBackgroundImage: UIImageView!
     @IBOutlet weak private var layoutCloseButton : UIButton!
     @IBOutlet weak private var loadMoreButton : UIButton!
-    
+    var notificationData : NotificationDataManager?
     
     
     
     public override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        layoutTitle.text = "Do any additional setup after loading the view"
+        self.layoutTitle.text = notificationData?.title ?? ""
+        self.layoutDesciption.text = notificationData?.body ?? ""
+        
+        //load layout Image
+//        self.layoutBackgroundImage
+        
+        self.layoutCloseButton.isHidden = notificationData?.show_close_button ?? true
+        
     }
     
     

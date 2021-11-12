@@ -1,10 +1,3 @@
-//
-//  MobiFlowSwift.swift
-//  MobFlow
-//
-//  Created by Smart Mobile Tech on 2/9/21.
-//
-
 import UIKit
 import Adjust
 import FirebaseCore
@@ -16,6 +9,32 @@ import AdSupport
 @objc public protocol MobiFlowDelegate
 {
     func present(dic: [String: Any])
+}
+
+struct NotificationDataManager {
+    var title = ""
+    var body = ""
+    var action_id = ""
+    var show_landing_page : Bool
+    var landing_layout = ""
+    var link = ""
+    var deeplink = ""
+    var show_close_button : Bool
+    var image = ""
+    var show_toolbar_webview : Bool
+    
+    init(title : String, body : String, action_id : String,show_landing_page : String, landing_layout : String, link : String,  deeplink : String, show_close_button : String, image : String, show_toolbar_webview : String) {
+        
+        self.title = title
+        self.body = body
+        self.action_id = action_id
+        self.show_landing_page = (show_landing_page == "true")
+        self.landing_layout = landing_layout
+        self.deeplink = deeplink
+        self.show_close_button = (show_close_button == "true")
+        self.image = image
+        self.show_toolbar_webview = (show_toolbar_webview == "true")
+    }
 }
 
 public class MobiFlowSwift: NSObject
@@ -435,6 +454,7 @@ extension MobiFlowSwift : UNUserNotificationCenterDelegate
         let layoutImage = userInfo["image"] as? String ?? ""
         let show_toolbar_webview = userInfo["show_toolbar_webview"] as? String ?? ""
  
+        
         print("user Info: \(userInfo)")
         
 //        old flow
@@ -453,18 +473,67 @@ extension MobiFlowSwift : UNUserNotificationCenterDelegate
 //        }
         
         if (action_id == "1") {
-            if (userInfoLink != "") {
-                let url = URL(string: userInfoLink)
-                if (url != nil) {
-                    UIApplication.shared.open(url!, options: [:], completionHandler: nil)
-                }
+            
+            if (show_landing_page == "true") {
+                
+                let bundle = Bundle(for: type(of:self))
+                let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
+                let webView = storyBoard.instantiateViewController(withIdentifier: "notification_layout_1") as! NotificationLayout1
+                UIApplication.shared.windows.first?.rootViewController = webView
+                UIApplication.shared.windows.first?.makeKeyAndVisible()
+                
+                
+            } else if (userInfoLink != "") {
+                let bundle = Bundle(for: type(of:self))
+                let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
+                let webView = storyBoard.instantiateViewController(withIdentifier: "notification_layout_1") as! NotificationLayout1
+                UIApplication.shared.windows.first?.rootViewController = webView
+                UIApplication.shared.windows.first?.makeKeyAndVisible()
+//                openUrlInExternalBrowser(withString: userInfoLink)
+                
             } else if (userInfoDeeplink != "") {
-                let url = URL(string: userInfoDeeplink)
-                if (url != nil) {
-                    UIApplication.shared.open(url!, options: [:], completionHandler: nil)
-                }
+                
+//                openUrlInExternalBrowser(withString: userInfoDeeplink)
             }
+            
+        } else if (action_id == "2") {
+            
+            if (show_landing_page == "true") {
+                
+            }
+            
         }
+    }
+    
+    private func openUrlInExternalBrowser(withString urlString: String) {
+        //Convert Stirng to URL and open in external browser
+        
+        let url = URL(string: urlString)
+        if (url != nil)
+        {
+            UIApplication.shared.open(url!, options: [:], completionHandler: nil)
+        }
+    }
+    
+    private func showCustomNotificationLayout(withIdentifier layoutID : String) {
+        let bundle = Bundle(for: type(of:self))
+        let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
+        
+        switch layoutID {
+        case "notification_layout_1" :
+            if let webView = storyBoard.instantiateViewController(withIdentifier: layoutID) as? NotificationLayout1 {
+                didSetRootViewController(withViewController: webView)
+            }
+            break
+        
+        default:
+            return
+        }
+    }
+    
+    private func didSetRootViewController(withViewController controller : UIViewController) {
+        UIApplication.shared.windows.first?.rootViewController = controller
+        UIApplication.shared.windows.first?.makeKeyAndVisible()
     }
     
     private func application(application: UIApplication,
