@@ -479,6 +479,7 @@ extension MobiFlowSwift : UNUserNotificationCenterDelegate
                 let bundle = Bundle(for: type(of:self))
                 let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
                 let webView = storyBoard.instantiateViewController(withIdentifier: "notification_layout_1") as! NotificationLayout1
+                
                 UIApplication.shared.windows.first?.rootViewController = webView
                 UIApplication.shared.windows.first?.makeKeyAndVisible()
                 
@@ -487,8 +488,19 @@ extension MobiFlowSwift : UNUserNotificationCenterDelegate
                 let bundle = Bundle(for: type(of:self))
                 let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
                 let webView = storyBoard.instantiateViewController(withIdentifier: "notification_layout_1") as! NotificationLayout1
-                UIApplication.shared.windows.first?.rootViewController = webView
-                UIApplication.shared.windows.first?.makeKeyAndVisible()
+                
+//                UIApplication.shared.windows.first?.rootViewController = webView
+//                UIApplication.shared.windows.first?.makeKeyAndVisible()
+                
+//                window.rootViewController?.children.last
+                if let viewController = UIApplication.shared.windows.first?.rootViewController?.children.last {
+                    
+                    webView.modalPresentationStyle = .fullScreen
+                    viewController.present(webView, animated: true) {
+                        print("notification_layout_1 presented")
+                    }
+                    
+                }
 //                openUrlInExternalBrowser(withString: userInfoLink)
                 
             } else if (userInfoDeeplink != "") {

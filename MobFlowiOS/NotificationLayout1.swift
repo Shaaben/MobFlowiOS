@@ -14,6 +14,7 @@ public class NotificationLayout1: UIViewController {
     @IBOutlet weak private var layoutBackgroundImage: UIImageView!
     @IBOutlet weak private var layoutCloseButton : UIButton!
     @IBOutlet weak private var loadMoreButton : UIButton!
+    
     var notificationData : NotificationDataManager?
     
     
@@ -31,5 +32,12 @@ public class NotificationLayout1: UIViewController {
         
     }
     
+    @IBAction func closeBtnActn(_ sender: Any) {
+        
+    }
+    
+    @IBAction func learnMoreBtnActn(_ sender: Any) {
+        
+    }
     
 }
