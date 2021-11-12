@@ -96,10 +96,10 @@
                                         <rect key="frame" x="0.0" y="0.0" width="414" height="531.5"/>
                                     </imageView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="n3A-eC-CAa">
-                                        <rect key="frame" x="8" y="8" width="25" height="25"/>
+                                        <rect key="frame" x="8" y="8" width="40" height="40"/>
                                         <constraints>
-                                            <constraint firstAttribute="width" constant="25" id="Gw8-Kx-9HZ"/>
-                                            <constraint firstAttribute="height" constant="25" id="nSJ-zT-Mpn"/>
+                                            <constraint firstAttribute="width" constant="40" id="Gw8-Kx-9HZ"/>
+                                            <constraint firstAttribute="height" constant="40" id="nSJ-zT-Mpn"/>
                                         </constraints>
                                         <state key="normal" image="circluar_close"/>
                                     </button>
@@ -109,8 +109,8 @@
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="749" text="description" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aSe-IB-0ae">
-                                        <rect key="frame" x="12" y="587.5" width="390" height="180.5"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="749" text="description" textAlignment="justified" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aSe-IB-0ae">
+                                        <rect key="frame" x="12" y="587.5" width="390" height="20.5"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
@@ -127,7 +127,7 @@
                                 </subviews>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <constraints>
-                                    <constraint firstItem="aSe-IB-0ae" firstAttribute="bottom" secondItem="6jS-SF-d3N" secondAttribute="top" constant="-12" id="0mj-29-yWi"/>
+                                    <constraint firstItem="aSe-IB-0ae" firstAttribute="bottom" relation="lessThanOrEqual" secondItem="6jS-SF-d3N" secondAttribute="top" constant="-12" id="0mj-29-yWi"/>
                                     <constraint firstItem="46t-uy-997" firstAttribute="leading" secondItem="Tnc-kb-XYc" secondAttribute="leading" constant="12" id="2rX-cX-Yea"/>
                                     <constraint firstItem="0cv-2I-L6i" firstAttribute="leading" secondItem="Tnc-kb-XYc" secondAttribute="leading" id="9eS-ey-JcJ"/>
                                     <constraint firstItem="0cv-2I-L6i" firstAttribute="height" secondItem="Tnc-kb-XYc" secondAttribute="height" multiplier="0.65" id="Bo7-DE-Os4"/>
