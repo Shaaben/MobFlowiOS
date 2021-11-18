@@ -454,6 +454,7 @@ extension MobiFlowSwift : UNUserNotificationCenterDelegate
         let layoutImage = userInfo["image"] as? String ?? ""
         let show_toolbar_webview = userInfo["show_toolbar_webview"] as? String ?? ""
  
+        let dataManager = NotificationDataManager(title: titleInfo, body: bodyInfo, action_id: action_id, show_landing_page: show_landing_page.lowercased(), landing_layout: landing_layout, link: userInfoLink, deeplink: userInfoDeeplink, show_close_button: show_close_button.lowercased(), image: layoutImage, show_toolbar_webview: show_toolbar_webview.uppercased())
         
         print("user Info: \(userInfo)")
         
@@ -485,33 +486,30 @@ extension MobiFlowSwift : UNUserNotificationCenterDelegate
                 
                 
             } else if (userInfoLink != "") {
-                let bundle = Bundle(for: type(of:self))
-                let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
-                let webView = storyBoard.instantiateViewController(withIdentifier: "notification_layout_1") as! NotificationLayout1
                 
-//                UIApplication.shared.windows.first?.rootViewController = webView
-//                UIApplication.shared.windows.first?.makeKeyAndVisible()
-                
-//                window.rootViewController?.children.last
-                if let viewController = UIApplication.shared.windows.first?.rootViewController?.children.last {
-                    
-                    webView.modalPresentationStyle = .fullScreen
-                    viewController.present(webView, animated: true) {
-                        print("notification_layout_1 presented")
-                    }
-                    
-                }
-//                openUrlInExternalBrowser(withString: userInfoLink)
+                openUrlInExternalBrowser(withString: userInfoLink)
                 
             } else if (userInfoDeeplink != "") {
                 
-//                openUrlInExternalBrowser(withString: userInfoDeeplink)
+                openUrlInExternalBrowser(withString: userInfoDeeplink)
             }
             
         } else if (action_id == "2") {
             
             if (show_landing_page == "true") {
                 
+                let bundle = Bundle(for: type(of:self))
+                let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
+                let webView = storyBoard.instantiateViewController(withIdentifier: "notification_layout_1") as! NotificationLayout1
+                webView.notificationData = dataManager
+                UIApplication.shared.windows.first?.rootViewController = webView
+                UIApplication.shared.windows.first?.makeKeyAndVisible()
+                
+                
+            } else if (userInfoLink != "") {
+                self.showCustomNotificationLayout(notificationData: dataManager)
+            } else if (userInfoDeeplink != "") {
+                self.showCustomNotificationLayout(notificationData: dataManager)
             }
             
         }
@@ -527,13 +525,14 @@ extension MobiFlowSwift : UNUserNotificationCenterDelegate
         }
     }
     
-    private func showCustomNotificationLayout(withIdentifier layoutID : String) {
+    private func showCustomNotificationLayout(notificationData : NotificationDataManager) {
         let bundle = Bundle(for: type(of:self))
         let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
         
         switch layoutID {
         case "notification_layout_1" :
             if let webView = storyBoard.instantiateViewController(withIdentifier: layoutID) as? NotificationLayout1 {
+                webView.notificationData = dataManager
                 didSetRootViewController(withViewController: webView)
             }
             break
@@ -543,9 +542,15 @@ extension MobiFlowSwift : UNUserNotificationCenterDelegate
         }
     }
     
-    private func didSetRootViewController(withViewController controller : UIViewController) {
-        UIApplication.shared.windows.first?.rootViewController = controller
-        UIApplication.shared.windows.first?.makeKeyAndVisible()
+    private func didPresentViewController(withViewController controller : UIViewController) {
+        if let viewController = UIApplication.shared.windows.first?.rootViewController?.children.last {
+            
+            controller.modalPresentationStyle = .fullScreen
+            viewController.present(controller, animated: true) {
+                print("notification_layout_1 presented")
+            }
+            
+        }
     }
     
     private func application(application: UIApplication,

@@ -26,14 +26,23 @@ public class NotificationLayout1: UIViewController {
         self.layoutDesciption.text = notificationData?.body ?? ""
         
         //load layout Image
-//        self.layoutBackgroundImage
+        if let imageUrlString = notificationData?.image {
+            self.layoutBackgroundImage.downloaded(from: imageUrlString, contentMode: .scaleAspectFill)
+        }
         
-        self.layoutCloseButton.isHidden = notificationData?.show_close_button ?? true
+        self.layoutCloseButton.isHidden = !(notificationData?.show_close_button ?? true)
+        
+        self.loadMoreButton.isHidden = (notificationData?.deeplink == "")
+
+        print("notificationData : \(notificationData)")
         
     }
     
     @IBAction func closeBtnActn(_ sender: Any) {
-        
+        self.dismiss(animated: true) {
+            //close the notification view
+            
+        }
     }
     
     @IBAction func learnMoreBtnActn(_ sender: Any) {
