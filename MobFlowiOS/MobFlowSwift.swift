@@ -530,10 +530,12 @@ extension MobiFlowSwift : UNUserNotificationCenterDelegate
         let bundle = Bundle(for: type(of:self))
         let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
         
-        switch notificationData.landing_layout {
+        let layoutID = notificationData.landing_layout
+        
+        switch layoutID {
         case "notification_layout_1" :
             if let webView = storyBoard.instantiateViewController(withIdentifier: layoutID) as? NotificationLayout1 {
-                webView.notificationData = dataManager
+                webView.notificationData = notificationData
                 didPresentViewController(withViewController: webView)
             }
             break
