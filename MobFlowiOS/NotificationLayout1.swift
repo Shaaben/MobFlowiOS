@@ -39,6 +39,7 @@ public class NotificationLayout1: UIViewController {
     }
     
     @IBAction func closeBtnActn(_ sender: Any) {
+        print("close button tapped...")
         self.dismiss(animated: true) {
             //close the notification view
             
@@ -46,7 +47,7 @@ public class NotificationLayout1: UIViewController {
     }
     
     @IBAction func learnMoreBtnActn(_ sender: Any) {
-        
+        print("learn More button tapped...")
     }
     
 }
