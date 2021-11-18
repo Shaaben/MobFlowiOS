@@ -445,6 +445,7 @@ extension MobiFlowSwift : UNUserNotificationCenterDelegate
         guard let userInfo = response.notification.request.content.userInfo as? [String: Any] else { return }
         
         let userInfoLink = userInfo["link"] as? String ?? ""
+        let titleInfo = userInfo["title"] as? String ?? ""
         let userInfoDeeplink = userInfo["deeplink"] as? String ?? ""
         let action_id = userInfo["action_id"] as? String ?? ""
         let bodyInfo = userInfo["body"] as? String ?? ""
@@ -529,11 +530,11 @@ extension MobiFlowSwift : UNUserNotificationCenterDelegate
         let bundle = Bundle(for: type(of:self))
         let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
         
-        switch layoutID {
+        switch notificationData.landing_layout {
         case "notification_layout_1" :
             if let webView = storyBoard.instantiateViewController(withIdentifier: layoutID) as? NotificationLayout1 {
                 webView.notificationData = dataManager
-                didSetRootViewController(withViewController: webView)
+                didPresentViewController(withViewController: webView)
             }
             break
         
