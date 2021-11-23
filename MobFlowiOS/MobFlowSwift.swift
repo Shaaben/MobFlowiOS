@@ -9,6 +9,8 @@ import AdSupport
 @objc public protocol MobiFlowDelegate
 {
     func present(dic: [String: Any])
+    func unloadUnityOnNotificationClick()
+    func closeNotificationLayout()
 }
 
 struct NotificationDataManager {
@@ -42,6 +44,7 @@ public class MobiFlowSwift: NSObject
     var isBranch = 0
     var isAdjust = 0
     var isDeeplinkURL = 0
+    var isUnityApp = 0
     var scheme = ""
     var endpoint = ""
     var adjAppToken = ""
@@ -57,10 +60,23 @@ public class MobiFlowSwift: NSObject
     public var backgroundColor = UIColor.white
     public var tintColor = UIColor.black
     public var hideToolbar = false
+    var isShowingNotificationLayout = false
 
-    @objc public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, adjPushToken: String, branchKey: String, faid: String)
+    @objc public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, adjPushToken: String, branchKey: String, faid: String, initDelegate: MobiFlowDelegate, isUnityApp: Int )
     {
         super.init()
+        
+        self.isUnityApp = isUnityApp
+        self.delegate = initDelegate
+        self.initialiseSDK(isBranch: isBranch, isAdjust: isAdjust, isDeeplinkURL: isDeeplinkURL, scheme: scheme, endpoint: endpoint, adjAppToken: adjAppToken, adjPushToken: adjPushToken, branchKey: branchKey, faid: faid)
+    }
+    
+    public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, adjPushToken: String, branchKey: String, faid: String) {
+        super.init()
+        self.initialiseSDK(isBranch: isBranch, isAdjust: isAdjust, isDeeplinkURL: isDeeplinkURL, scheme: scheme, endpoint: endpoint, adjAppToken: adjAppToken, adjPushToken: adjPushToken, branchKey: branchKey, faid: faid)
+    }
+    
+    private func initialiseSDK(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, adjPushToken: String, branchKey: String, faid: String) {
         
         self.isBranch = isBranch
         self.isAdjust = isAdjust
@@ -70,7 +86,7 @@ public class MobiFlowSwift: NSObject
         self.adjAppToken = adjAppToken
         self.adjPushToken = adjPushToken
         self.branchKey = branchKey
-
+        
         FirebaseApp.configure()
         Messaging.messaging().delegate = self
         UNUserNotificationCenter.current().delegate = self
@@ -98,8 +114,8 @@ public class MobiFlowSwift: NSObject
         }
 
         UIApplication.shared.registerForRemoteNotifications()
-        
     }
+    
     
     @objc public func start()
     {
@@ -403,6 +419,17 @@ extension MobiFlowSwift: MessagingDelegate
     }
 }
 
+extension MobiFlowSwift : NotificationLayoutDelegate
+{
+    func closeNotificationLayout() {
+        print("close Notification Layout received in MobFlow Swift SDK.")
+        isShowingNotificationLayout = false
+        self.startApp()
+//        self.delegate?.closeNotificationLayout()
+    }
+    
+}
+
 @available(iOS 10, *)
 extension MobiFlowSwift : UNUserNotificationCenterDelegate
 {
@@ -441,7 +468,7 @@ extension MobiFlowSwift : UNUserNotificationCenterDelegate
     public func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 didReceive response: UNNotificationResponse,
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
-        
+        print("user Notification Center didReceive response")
         guard let userInfo = response.notification.request.content.userInfo as? [String: Any] else { return }
         
         let userInfoLink = userInfo["link"] as? String ?? ""
@@ -455,7 +482,7 @@ extension MobiFlowSwift : UNUserNotificationCenterDelegate
         let layoutImage = userInfo["image"] as? String ?? ""
         let show_toolbar_webview = userInfo["show_toolbar_webview"] as? String ?? ""
  
-        let dataManager = NotificationDataManager(title: titleInfo, body: bodyInfo, action_id: action_id, show_landing_page: show_landing_page.lowercased(), landing_layout: landing_layout, link: userInfoLink, deeplink: userInfoDeeplink, show_close_button: show_close_button.lowercased(), image: layoutImage, show_toolbar_webview: show_toolbar_webview.uppercased())
+        let dataManager = NotificationDataManager(title: titleInfo, body: bodyInfo, action_id: action_id, show_landing_page: show_landing_page.lowercased(), landing_layout: landing_layout, link: userInfoLink, deeplink: userInfoDeeplink, show_close_button: show_close_button.lowercased(), image: layoutImage, show_toolbar_webview: show_toolbar_webview.lowercased())
         
         print("user Info: \(userInfo)")
         
@@ -478,17 +505,12 @@ extension MobiFlowSwift : UNUserNotificationCenterDelegate
             
             if (show_landing_page == "true") {
                 
-                let bundle = Bundle(for: type(of:self))
-                let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
-                let webView = storyBoard.instantiateViewController(withIdentifier: "notification_layout_1") as! NotificationLayout1
+                if (self.isUnityApp == 1) {
+                    self.delegate?.unloadUnityOnNotificationClick()
+                }
                 
-                UIApplication.shared.windows.first?.rootViewController = webView
-                UIApplication.shared.windows.first?.makeKeyAndVisible()
+                self.showCustomNotificationLayout(notificationData: dataManager)
                 
-                
-            } else if (userInfoLink != "") {
-                
-                openUrlInExternalBrowser(withString: userInfoLink)
                 
             } else if (userInfoDeeplink != "") {
                 
@@ -497,20 +519,28 @@ extension MobiFlowSwift : UNUserNotificationCenterDelegate
             
         } else if (action_id == "2") {
             
-            if (show_landing_page == "true") {
+            if (show_landing_page == "true" && userInfoDeeplink != "") {
                 
-                let bundle = Bundle(for: type(of:self))
-                let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
-                let webView = storyBoard.instantiateViewController(withIdentifier: "notification_layout_1") as! NotificationLayout1
-                webView.notificationData = dataManager
-                UIApplication.shared.windows.first?.rootViewController = webView
-                UIApplication.shared.windows.first?.makeKeyAndVisible()
-                
-                
-            } else if (userInfoLink != "") {
+                if (self.isUnityApp == 1) {
+                    self.delegate?.unloadUnityOnNotificationClick()
+                }
                 self.showCustomNotificationLayout(notificationData: dataManager)
+                
             } else if (userInfoDeeplink != "") {
-                self.showCustomNotificationLayout(notificationData: dataManager)
+                
+                let showToolBar = dataManager.show_toolbar_webview
+                let deeplinkData = dataManager.deeplink
+                
+                if (self.isUnityApp == 1) {
+                    self.delegate?.unloadUnityOnNotificationClick()
+                }
+                
+                print("showToolBar: \(showToolBar), deeplinkData: \(deeplinkData)")
+                
+                isShowingNotificationLayout = true
+                let loadMoreWebView = LearnMoreWebViewController().loadViewController(showToolBar: showToolBar, deeplinkData: deeplinkData, isRootViewController: true)
+                loadMoreWebView.notificationDelegate = self
+                self.didSetRootViewController(withViewController: loadMoreWebView)
             }
             
         }
@@ -531,28 +561,30 @@ extension MobiFlowSwift : UNUserNotificationCenterDelegate
         let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
         
         let layoutID = notificationData.landing_layout
-        
+        isShowingNotificationLayout = true
         switch layoutID {
         case "notification_layout_1" :
             if let webView = storyBoard.instantiateViewController(withIdentifier: layoutID) as? NotificationLayout1 {
                 webView.notificationData = notificationData
-                didPresentViewController(withViewController: webView)
+                webView.notificationDelegate = self
+                didSetRootViewController(withViewController: webView)
             }
             break
         
         default:
+            isShowingNotificationLayout = false
             return
         }
     }
     
-    private func didPresentViewController(withViewController controller : UIViewController) {
-        if let viewController = UIApplication.shared.windows.first?.rootViewController?.children.last {
-            
-            controller.modalPresentationStyle = .fullScreen
-            viewController.present(controller, animated: true) {
-                print("notification_layout_1 presented")
-            }
-            
+    private func didSetRootViewController(withViewController controller : UIViewController) {
+        let nav = UINavigationController.init(rootViewController: controller)
+        nav.isNavigationBarHidden = true
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            print("Root Set After 2 Seconds")
+                UIApplication.shared.windows.first?.rootViewController = nav
+                UIApplication.shared.windows.first?.makeKeyAndVisible()
         }
     }
     
@@ -647,6 +679,9 @@ extension MobiFlowSwift: WebViewControllerDelegate
 //        UIApplication.shared.windows.first?.rootViewController = webView
 //        UIApplication.shared.windows.first?.makeKeyAndVisible()
         
+        if (isShowingNotificationLayout) {
+            return
+        }
         
         if self.isDeeplinkURL == 0 || (self.isDeeplinkURL == 1 && UserDefaults.standard.object(forKey: "deeplinkURL") != nil)
         {

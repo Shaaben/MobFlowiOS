@@ -7,6 +7,11 @@
 
 import UIKit
 
+protocol NotificationLayoutDelegate
+{
+    func closeNotificationLayout()
+}
+
 public class NotificationLayout1: UIViewController {
 
     @IBOutlet weak private var layoutTitle : UILabel!
@@ -16,8 +21,7 @@ public class NotificationLayout1: UIViewController {
     @IBOutlet weak private var loadMoreButton : UIButton!
     
     var notificationData : NotificationDataManager?
-    
-    
+    var notificationDelegate : NotificationLayoutDelegate?
     
     public override func viewDidLoad() {
         super.viewDidLoad()
@@ -40,14 +44,28 @@ public class NotificationLayout1: UIViewController {
     
     @IBAction func closeBtnActn(_ sender: Any) {
         print("close button tapped...")
-        self.dismiss(animated: true) {
-            //close the notification view
-            
-        }
+        self.notificationDelegate?.closeNotificationLayout()
     }
     
     @IBAction func learnMoreBtnActn(_ sender: Any) {
         print("learn More button tapped...")
+        
+        let showToolBar = notificationData?.show_toolbar_webview ?? false
+        let action_id = notificationData?.action_id ?? ""
+        
+        let deeplinkData = notificationData?.deeplink ?? ""
+        
+        if (action_id == "1" && deeplinkData != "") {
+            let url = URL(string: deeplinkData)
+            if (url != nil) {
+                UIApplication.shared.open(url!, options: [:], completionHandler: nil)
+            }
+        } else if (action_id == "2" && deeplinkData != "") {
+            print("showToolBar: \(showToolBar), deeplinkData: \(deeplinkData)")
+            let loadMoreWebView = LearnMoreWebViewController().loadViewController(showToolBar: showToolBar, deeplinkData: deeplinkData, isRootViewController: false)
+            self.navigationController?.pushViewController(loadMoreWebView, animated: true)
+        }
+        
     }
     
 }

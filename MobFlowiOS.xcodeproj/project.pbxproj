@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		180B9B0C273BC4B200B19CA4 /* NotificationLayout1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 180B9B0B273BC4B200B19CA4 /* NotificationLayout1.swift */; };
+		1867FB75274CEC8000A65248 /* LearnMoreWebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1867FB74274CEC8000A65248 /* LearnMoreWebViewController.swift */; };
 		18B70C8627462C640003F67F /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18B70C8527462C640003F67F /* Extensions.swift */; };
 		72BEB6E6286DE0159A8400F6 /* Pods_MobFlowiOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D37EFC47D8D7C8C3DD153DE0 /* Pods_MobFlowiOS.framework */; };
 		AC9056C3260DD3E30084E14F /* MobFlowiOS.h in Headers */ = {isa = PBXBuildFile; fileRef = AC9056C1260DD3E30084E14F /* MobFlowiOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -21,6 +22,7 @@
 
 /* Begin PBXFileReference section */
 		180B9B0B273BC4B200B19CA4 /* NotificationLayout1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationLayout1.swift; sourceTree = "<group>"; };
+		1867FB74274CEC8000A65248 /* LearnMoreWebViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LearnMoreWebViewController.swift; sourceTree = "<group>"; };
 		18B70C8527462C640003F67F /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		6EB9651655E5614AE80864B0 /* Pods-MobFlowiOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MobFlowiOS.debug.xcconfig"; path = "Target Support Files/Pods-MobFlowiOS/Pods-MobFlowiOS.debug.xcconfig"; sourceTree = "<group>"; };
 		72DF040B73C53104AFED8EB8 /* Pods-MobFlowiOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MobFlowiOS.release.xcconfig"; path = "Target Support Files/Pods-MobFlowiOS/Pods-MobFlowiOS.release.xcconfig"; sourceTree = "<group>"; };
@@ -91,6 +93,7 @@
 				AC9056E2260DD6E90084E14F /* Main.storyboard */,
 				AC9056DB260DD6C70084E14F /* MobFlowSwift.swift */,
 				AC9056DA260DD6C70084E14F /* NoInternetViewController.swift */,
+				1867FB74274CEC8000A65248 /* LearnMoreWebViewController.swift */,
 				180B9B0B273BC4B200B19CA4 /* NotificationLayout1.swift */,
 				AC9056DC260DD6C70084E14F /* WebViewController.swift */,
 				18B70C8527462C640003F67F /* Extensions.swift */,
@@ -212,6 +215,7 @@
 				AC9056DE260DD6C80084E14F /* MobFlowSwift.swift in Sources */,
 				AC9056DF260DD6C80084E14F /* WebViewController.swift in Sources */,
 				180B9B0C273BC4B200B19CA4 /* NotificationLayout1.swift in Sources */,
+				1867FB75274CEC8000A65248 /* LearnMoreWebViewController.swift in Sources */,
 				AC9056DD260DD6C80084E14F /* NoInternetViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
