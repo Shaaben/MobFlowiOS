@@ -425,7 +425,6 @@ extension MobiFlowSwift : NotificationLayoutDelegate
         print("close Notification Layout received in MobFlow Swift SDK.")
         isShowingNotificationLayout = false
         self.startApp()
-//        self.delegate?.closeNotificationLayout()
     }
     
 }
