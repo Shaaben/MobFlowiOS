@@ -10,7 +10,6 @@ import AdSupport
 {
     func present(dic: [String: Any])
     func unloadUnityOnNotificationClick()
-//    func closeNotificationLayout()
 }
 
 struct NotificationDataManager {
