@@ -21,6 +21,7 @@ Pod::Spec.new do |spec|
   spec.dependency 'Firebase'
   spec.dependency 'Firebase/Analytics'
   spec.dependency 'Firebase/Messaging'
+  spec.dependency 'Firebase/RemoteConfig'
   spec.dependency 'Branch'
   spec.source_files  = "MobFlowiOS/*.{swift}"
   spec.resources = "MobFlowiOS/*.{storyboard,xib,xcassets,lproj,png}"
