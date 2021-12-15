@@ -4,7 +4,6 @@
 //
 //  Created by Smart Mobile Tech on 2/9/21.
 //
-
 import UIKit
 import Adjust
 import FirebaseCore
@@ -12,6 +11,8 @@ import FirebaseMessaging
 import AppTrackingTransparency
 import Branch
 import AdSupport
+import FirebaseRemoteConfig
+import CryptoKit
 
 @objc public protocol MobiFlowDelegate
 {
@@ -38,20 +39,57 @@ public class MobiFlowSwift: NSObject
     public var backgroundColor = UIColor.white
     public var tintColor = UIColor.black
     public var hideToolbar = false
-
-    @objc public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, adjPushToken: String, branchKey: String, faid: String)
+    private let USERDEFAULT_CustomUUID = "USERDEFAULT_CustomUUID"
+    
+    @objc public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, adjAppToken: String, adjPushToken: String, branchKey: String, faid: String, remoteConfigKey: String)
     {
         super.init()
+        
+        self.initialiseSDK(isBranch: isBranch, isAdjust: isAdjust, isDeeplinkURL: isDeeplinkURL, scheme: scheme, adjAppToken: adjAppToken, adjPushToken: adjPushToken, branchKey: branchKey, faid: faid)
+        
+        let settings = RemoteConfigSettings()
+
+        let remoteConfig = RemoteConfig.remoteConfig()
+        remoteConfig.configSettings = settings
+        
+        remoteConfig.fetchAndActivate { status, error in
+            if status == .successFetchedFromRemote {
+                //Configuration Fetched and Active
+                let fetchedEndpoint = self.fetchEndPointFromConfig(withKey: remoteConfigKey)
+                if (fetchedEndpoint != "") {
+                    self.endpoint = fetchedEndpoint
+                    self.startApp()
+                } else {
+                    self.showNativeWithPermission(dic: [String : Any]())
+                }
+            } else {
+                //Error Fetcheing Configuration
+                self.showNativeWithPermission(dic: [String: Any]())
+            }
+        }
+    }
+    
+    private func fetchEndPointFromConfig(withKey key : String) -> String {
+        var configData = ""
+        let endpontData = RemoteConfig.remoteConfig()[key].stringValue ?? ""
+        
+        if (endpontData != "") {
+            configData = endpoint.hasPrefix("http") ? endpontData : "https://" + endpontData
+        }
+        
+        return configData
+    }
+    
+    private func initialiseSDK(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, adjAppToken: String, adjPushToken: String, branchKey: String, faid: String) {
         
         self.isBranch = isBranch
         self.isAdjust = isAdjust
         self.isDeeplinkURL = isDeeplinkURL
         self.scheme = scheme
-        self.endpoint = endpoint
         self.adjAppToken = adjAppToken
         self.adjPushToken = adjPushToken
         self.branchKey = branchKey
-
+        
         FirebaseApp.configure()
         Messaging.messaging().delegate = self
         UNUserNotificationCenter.current().delegate = self
@@ -80,6 +118,7 @@ public class MobiFlowSwift: NSObject
 
         UIApplication.shared.registerForRemoteNotifications()
     }
+    
     
     @objc public func start()
     {
@@ -184,6 +223,40 @@ public class MobiFlowSwift: NSObject
         return self.addressURL.removingPercentEncoding!
     }
     
+    private func generateUserUUID() -> String {
+        
+        var md5UUID = getUserUUID()
+        
+        if (md5UUID == "") {
+            var uuid = ""
+            let deviceId = UIDevice.current.identifierForVendor?.uuidString ?? ""
+            let customTimeStamp = currentTimeInMilliSeconds()
+            
+            uuid = deviceId + customTimeStamp
+            
+            md5UUID = uuid.md5()
+            saveUserUUID(value: md5UUID)
+        }
+        
+        return md5UUID
+    }
+    
+    private func getUserUUID() -> String {
+        return UserDefaults.standard.string(forKey: USERDEFAULT_CustomUUID) ?? ""
+    }
+    
+    private func saveUserUUID(value:String) {
+        return UserDefaults.standard.set(value, forKey: USERDEFAULT_CustomUUID)
+    }
+    
+    func currentTimeInMilliSeconds() -> String {
+        let currentDate = Date()
+        let since1970 = currentDate.timeIntervalSince1970
+        let intTimeStamp = Int(since1970 * 1000)
+        return "\(intTimeStamp)"
+    }
+    
+    
     func createCustomURL()
     {
         let lang = Locale.current.languageCode ?? ""
@@ -213,8 +286,22 @@ public class MobiFlowSwift: NSObject
             d = d.replacingOccurrences(of: "=", with: "%3D", options: .literal, range: nil)
             d = d.replacingOccurrences(of: "&", with: "%26", options: .literal, range: nil)
         }
-        let string =  "\(self.endpoint)?packageName=\(packageName)&flowName=iosBA&lang=\(lang)&deviceId=\(uuid)&adjustId=\(adid)&gpsAdid=\(idfa)&referringLink=\(d)&fScheme=\(fScheme)"
-        self.customURL = string
+        
+//        let string =  "\(self.endpoint)?packageName=\(packageName)&flowName=iosBA&lang=\(lang)&deviceId=\(uuid)&adjustId=\(adid)&gpsAdid=\(idfa)&referringLink=\(d)&fScheme=\(fScheme)"
+        
+        let mergePackageUUID = "\(packageName)-\(generateUserUUID())"
+//        print("mergePackageUUID : \(mergePackageUUID)")
+        let baseEncodedMergePackageUUID = mergePackageUUID.toBase64()
+//        print("baseEncodedMergePackageUUID : \(baseEncodedMergePackageUUID)")
+        let trackingPlatform = (self.isAdjust == 1) ? "2" : "3"
+        let adjustAttributes = Adjust.attribution()?.description ?? ""
+        let encodedAdjustAttributes = adjustAttributes.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) ?? ""
+//        print("allow encoding : \(encodedAdjustAttributes)")
+        let customString = "\(self.endpoint)?\(baseEncodedMergePackageUUID);\(trackingPlatform);\(encodedAdjustAttributes)"
+        
+        
+        print("generated custom string : \(customString)")
+        self.customURL = customString
     }
     
     func initWebViewURL() -> WebViewController
@@ -268,7 +355,6 @@ public class MobiFlowSwift: NSObject
             webView.tintColor = self.tintColor
             webView.backgroundColor = self.backgroundColor
             webView.hideToolbar = self.hideToolbar
-
             return webView
         }
         
@@ -279,6 +365,42 @@ public class MobiFlowSwift: NSObject
     {
         UIApplication.shared.windows.first?.rootViewController = webView
         UIApplication.shared.windows.first?.makeKeyAndVisible()
+    }
+    
+    private func showNativeWithPermission(dic: [String : Any]) {
+        self.requestPremission()
+        self.delegate?.present(dic: dic)
+    }
+}
+
+private extension String {
+    
+    func md5() -> String {
+        return Insecure.MD5.hash(data: self.data(using: .utf8)!).map { String(format: "%02hhx", $0) }.joined()
+    }
+    
+    func fromBase64() -> String? {
+        guard let data = Data(base64Encoded: self) else {
+            return nil
+        }
+        
+        return String(data: data, encoding: .utf8)
+    }
+    
+    func toBase64() -> String {
+        return Data(self.utf8).base64EncodedString()
+    }
+    
+    func utf8DecodedString()-> String {
+        let data = self.data(using: .utf8)
+        let message = String(data: data!, encoding: .nonLossyASCII) ?? ""
+        return message
+    }
+    
+    func utf8EncodedString()-> String {
+        let messageData = self.data(using: .nonLossyASCII)
+        let text = String(data: messageData!, encoding: .utf8) ?? ""
+        return text
     }
 }
 
@@ -415,7 +537,8 @@ extension MobiFlowSwift : UNUserNotificationCenterDelegate
         }*/
         
         // Change this to your preferred presentation option
-        completionHandler([[.alert, .sound]])
+//        completionHandler([[.alert, .sound]])
+        completionHandler([.banner,.list,.sound])
     }
     
     public func userNotificationCenter(_ center: UNUserNotificationCenter,
@@ -514,8 +637,7 @@ extension MobiFlowSwift: WebViewControllerDelegate
 {
     func present(dic: [String : Any])
     {
-        self.requestPremission()
-        self.delegate?.present(dic: dic)
+        self.showNativeWithPermission(dic: dic)
     }
     
     func set(schemeURL: String, addressURL: String)
@@ -553,8 +675,7 @@ extension MobiFlowSwift: WebViewControllerDelegate
             }
             else
             {
-                self.requestPremission()
-                self.delegate?.present(dic: [String: Any]())
+                self.showNativeWithPermission(dic: [String : Any]())
                 let url = URL(string: self.schemeURL)
                 if UIApplication.shared.canOpenURL(url!)
                 {
@@ -564,8 +685,7 @@ extension MobiFlowSwift: WebViewControllerDelegate
         }
         else
         {
-            self.requestPremission()
-            self.delegate?.present(dic: [String: Any]())
+            self.showNativeWithPermission(dic: [String : Any]())
         }
     }
 }
