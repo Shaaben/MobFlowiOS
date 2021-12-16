@@ -124,7 +124,7 @@ public class MobiFlowSwift: NSObject
         UIApplication.shared.registerForRemoteNotifications()
     }
     
-    private func func callFirebaseCallBack() {
+    private func callFirebaseCallBack() {
         let adjustEvent = ADJEvent(eventToken: firebaseToken)
         adjustEvent?.addCallbackParameter("eventValue", value: self.faid) //firebase Instance Id
         adjustEvent?.addCallbackParameter("user_uuid", value: self.generateUserUUID())
