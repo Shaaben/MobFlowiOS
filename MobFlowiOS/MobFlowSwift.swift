@@ -93,6 +93,7 @@ public class MobiFlowSwift: NSObject
         self.adjPushToken = adjPushToken
         self.branchKey = branchKey
         self.faid = faid
+        self.firebaseToken = firebaseToken
         
         FirebaseApp.configure()
         Messaging.messaging().delegate = self
