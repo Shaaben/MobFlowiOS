@@ -28,6 +28,8 @@ public class MobiFlowSwift: NSObject
     var endpoint = ""
     var adjAppToken = ""
     var adjPushToken = ""
+    var firebaseToken = ""
+    var faid = ""
     var branchKey = ""
     var customURL = ""
     var schemeURL = ""
@@ -41,11 +43,11 @@ public class MobiFlowSwift: NSObject
     public var hideToolbar = false
     private let USERDEFAULT_CustomUUID = "USERDEFAULT_CustomUUID"
     
-    @objc public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, adjAppToken: String, adjPushToken: String, branchKey: String, faid: String, remoteConfigKey: String)
+    @objc public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, adjAppToken: String, adjPushToken: String, firebaseToken: String, branchKey: String, faid: String, remoteConfigKey: String)
     {
         super.init()
-        
-        self.initialiseSDK(isBranch: isBranch, isAdjust: isAdjust, isDeeplinkURL: isDeeplinkURL, scheme: scheme, adjAppToken: adjAppToken, adjPushToken: adjPushToken, branchKey: branchKey, faid: faid)
+                
+        self.initialiseSDK(isBranch: isBranch, isAdjust: isAdjust, isDeeplinkURL: isDeeplinkURL, scheme: scheme, adjAppToken: adjAppToken, adjPushToken: adjPushToken, firebaseToken: firebaseToken, branchKey: branchKey, faid: faid)
         
         let settings = RemoteConfigSettings()
 
@@ -80,7 +82,7 @@ public class MobiFlowSwift: NSObject
         return configData
     }
     
-    private func initialiseSDK(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, adjAppToken: String, adjPushToken: String, branchKey: String, faid: String) {
+    private func initialiseSDK(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, adjAppToken: String, adjPushToken: String, firebaseToken: String, branchKey: String, faid: String) {
         
         self.isBranch = isBranch
         self.isAdjust = isAdjust
@@ -89,6 +91,7 @@ public class MobiFlowSwift: NSObject
         self.adjAppToken = adjAppToken
         self.adjPushToken = adjPushToken
         self.branchKey = branchKey
+        self.faid = faid
         
         FirebaseApp.configure()
         Messaging.messaging().delegate = self
@@ -111,14 +114,23 @@ public class MobiFlowSwift: NSObject
             adjustConfig?.sendInBackground = true
             adjustConfig?.delegate = self
             let uuid = UIDevice.current.identifierForVendor!.uuidString
-            Adjust.addSessionCallbackParameter("App_To_Adjust_DeviceId", value: uuid)
-            Adjust.addSessionCallbackParameter("Firebase_App_InstanceId", value: faid)
+            Adjust.addSessionCallbackParameter("user_uuid", value: self.generateUserUUID())
+
+            callFirebaseCallBack()
+            
             Adjust.appDidLaunch(adjustConfig)
         }
 
         UIApplication.shared.registerForRemoteNotifications()
     }
     
+    private func func callFirebaseCallBack() {
+        let adjustEvent = ADJEvent(eventToken: firebaseToken)
+        adjustEvent?.addCallbackParameter("eventValue", value: self.faid) //firebase Instance Id
+        adjustEvent?.addCallbackParameter("user_uuid", value: self.generateUserUUID())
+        
+        Adjust.trackEvent(adjustEvent)
+    }
     
     @objc public func start()
     {
@@ -495,11 +507,11 @@ extension MobiFlowSwift: MessagingDelegate
             print("FCM "+fcmToken!)
             
             let adjustEvent = ADJEvent(eventToken: adjPushToken)
-            adjustEvent?.addCallbackParameter("eventValue", value: fcmToken ?? "")
+            adjustEvent?.addCallbackParameter("eventValue", value: fcmToken ?? "") // FCM Token
             let deeplink = UserDefaults.standard.object(forKey: "deeplinkURL") as? String
             adjustEvent?.addCallbackParameter("deeplink", value: deeplink ?? "")
-            let uuid = UIDevice.current.identifierForVendor!.uuidString
-            adjustEvent?.addCallbackParameter("App_To_Adjust_DeviceId", value: uuid);
+            adjustEvent?.addCallbackParameter("user_uuid", value: self.generateUserUUID())
+            
             Adjust.trackEvent(adjustEvent)
         }
     }
