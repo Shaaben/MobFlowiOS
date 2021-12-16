@@ -50,7 +50,8 @@ public class MobiFlowSwift: NSObject
         self.initialiseSDK(isBranch: isBranch, isAdjust: isAdjust, isDeeplinkURL: isDeeplinkURL, scheme: scheme, adjAppToken: adjAppToken, adjPushToken: adjPushToken, firebaseToken: firebaseToken, branchKey: branchKey, faid: faid)
         
         let settings = RemoteConfigSettings()
-
+        settings.minimumFetchInterval = 0
+        
         let remoteConfig = RemoteConfig.remoteConfig()
         remoteConfig.configSettings = settings
         
