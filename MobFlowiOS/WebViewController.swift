@@ -19,22 +19,6 @@ protocol WebViewControllerDelegate
 public class WebViewController: UIViewController
 {
     @IBOutlet weak private var webView: WKWebView!
-    @IBOutlet weak private var titleLabel: UILabel! {
-        didSet {
-            self.titleLabel.textColor = self.tintColor
-        }
-    }
-    @IBOutlet weak private var closeBtn: UIButton! {
-        didSet {
-            let image = UIImage(named: "close",
-                                in: Bundle(for: type(of:self)),
-                                compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
-            self.closeBtn.setImage(image, for: .normal)
-            self.closeBtn.tintColor = self.tintColor
-        }
-    }
-    @IBOutlet weak private var toolbar: UIView!
-    @IBOutlet weak var toolbarHeight: NSLayoutConstraint!
     
     var urlToOpen = URL(string: "")
     var schemeURL = ""
@@ -53,30 +37,9 @@ public class WebViewController: UIViewController
         let request = URLRequest(url: self.urlToOpen!)
         self.webView.navigationDelegate = self
         self.webView.load(request)
-        let urlToOpen = URL(string: self.addressURL.removingPercentEncoding!)
-        if (urlToOpen != nil)
-        {
-            if !self.hideToolbar
-            {
-                self.toolbar.isHidden = false
-                toolbarHeight.constant = 50
-                self.toolbar.layoutIfNeeded()
-            }
-            else
-            {
-                self.toolbar.isHidden = true
-                toolbarHeight.constant = 0
-                self.toolbar.layoutIfNeeded()
-            }
-        }
-        else
-        {
-            self.toolbar.isHidden = true
-            toolbarHeight.constant = 0
-            self.toolbar.layoutIfNeeded()
-        }
         
         NotificationCenter.default.addObserver(self, selector: #selector(reachabilityChanged(note:)), name: .reachabilityChanged, object: reachability)
+        
         do
         {
             try reachability.startNotifier()
@@ -133,28 +96,13 @@ extension WebViewController: WKNavigationDelegate
         decisionHandler(WKNavigationActionPolicy.allow)
         if let url = navigationAction.request.url
         {
-            if (url.queryDictionary!["sName"] != nil)
-            {
-                self.titleLabel.text = url.queryDictionary!["sName"] as? String
-            }
             if UIApplication.shared.canOpenURL(url) && !url.absoluteString.hasPrefix("http")
             {
                 self.schemeURL = url.absoluteString
-                if(url.query != nil)
-                {
-                    self.addressURL = url.query!
-                }
                 self.delegate!.set(schemeURL: self.schemeURL, addressURL: self.addressURL)
                 self.delegate!.startApp()
             }
         }
-    }
-    
-    @IBAction func dismissWebView(_ sender: UIButton)
-    {
-        let url = URL(string: schemeURL)
-        let dic = (url?.queryDictionary)!
-        self.delegate!.present(dic: dic)
     }
     
     func presentNoInternetViewController()

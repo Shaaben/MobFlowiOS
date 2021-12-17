@@ -77,7 +77,7 @@ public class MobiFlowSwift: NSObject
         let endpontData = RemoteConfig.remoteConfig()[key].stringValue ?? ""
         
         if (endpontData != "") {
-            configData = endpoint.hasPrefix("http") ? endpontData : "https://" + endpontData
+            configData = endpontData.hasPrefix("http") ? endpontData : "https://" + endpontData
         }
         
         return configData
@@ -205,7 +205,7 @@ public class MobiFlowSwift: NSObject
     {
         if self.isDeeplinkURL == 0
         {
-            if self.schemeURL.hasPrefix(self.scheme) && self.addressURL.isEmpty
+            if self.endpoint.isEmpty
             {
                 return true
             }
