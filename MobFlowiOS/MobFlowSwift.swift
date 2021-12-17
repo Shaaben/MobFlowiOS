@@ -673,20 +673,6 @@ extension MobiFlowSwift: WebViewControllerDelegate
                 let webView = initWebViewURL()
                 self.present(webView: webView)
             }
-            else if !self.addressURL.isEmpty
-            {
-                let urlToOpen = URL(string: self.addressURL.removingPercentEncoding!)
-                let bundle = Bundle(for: type(of:self))
-                let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
-                let webView = storyBoard.instantiateViewController(withIdentifier: "WebViewController") as! WebViewController
-                webView.urlToOpen = urlToOpen!
-                webView.schemeURL = self.schemeURL
-                webView.addressURL = self.addressURL
-                webView.delegate = self
-                webView.tintColor = self.tintColor
-                webView.backgroundColor = self.backgroundColor
-                self.present(webView: webView)
-            }
             else
             {
                 self.showNativeWithPermission(dic: [String : Any]())
