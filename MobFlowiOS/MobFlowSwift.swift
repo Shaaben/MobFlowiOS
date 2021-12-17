@@ -273,49 +273,32 @@ public class MobiFlowSwift: NSObject
     
     func createCustomURL()
     {
-        let lang = Locale.current.languageCode ?? ""
         let packageName = Bundle.main.bundleIdentifier ?? ""
-        let uuid = UIDevice.current.identifierForVendor!.uuidString
-        var adid = ""
-        var idfa = ""
-        if self.isBranch == 1
-        {
-            if ATTrackingManager.trackingAuthorizationStatus == .authorized
-            {
-                idfa = ASIdentifierManager.shared().advertisingIdentifier.uuidString
-            }
-        }
-        if self.isAdjust == 1
-        {
-            adid = Adjust.adid() ?? ""
-            idfa = Adjust.idfa() ?? ""
-        }
-        
-        let fScheme = self.scheme.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-        var d = ""
-        if self.isDeeplinkURL == 1
-        {
-            let deeplinkURL = UserDefaults.standard.value(forKey: "deeplinkURL") as? String
-            d = deeplinkURL!.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-            d = d.replacingOccurrences(of: "=", with: "%3D", options: .literal, range: nil)
-            d = d.replacingOccurrences(of: "&", with: "%26", options: .literal, range: nil)
-        }
-        
-//        let string =  "\(self.endpoint)?packageName=\(packageName)&flowName=iosBA&lang=\(lang)&deviceId=\(uuid)&adjustId=\(adid)&gpsAdid=\(idfa)&referringLink=\(d)&fScheme=\(fScheme)"
         
         let mergePackageUUID = "\(packageName)-\(generateUserUUID())"
-//        print("mergePackageUUID : \(mergePackageUUID)")
         let baseEncodedMergePackageUUID = mergePackageUUID.toBase64()
-//        print("baseEncodedMergePackageUUID : \(baseEncodedMergePackageUUID)")
         let trackingPlatform = (self.isAdjust == 1) ? "2" : "3"
-        let adjustAttributes = Adjust.attribution()?.description ?? ""
-        let encodedAdjustAttributes = adjustAttributes.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) ?? ""
-//        print("allow encoding : \(encodedAdjustAttributes)")
-        let customString = "\(self.endpoint)?\(baseEncodedMergePackageUUID);\(trackingPlatform);\(encodedAdjustAttributes)"
         
+        let adjustAttributes = fetchAdjustAttributes()
+        
+        let encodedAdjustAttributes = adjustAttributes.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) ?? ""
+        let customString = "\(self.endpoint)?\(baseEncodedMergePackageUUID);\(trackingPlatform);\(encodedAdjustAttributes)"
         
         print("generated custom string : \(customString)")
         self.customURL = customString
+    }
+        
+    private func fetchAdjustAttributes() -> String {
+        
+        for _ in 1...4 {
+            sleep(1)
+            let adjustAttributes = Adjust.attribution()?.description ?? ""
+            
+            if (adjustAttributes != "") {
+                return adjustAttributes
+            }
+        }
+        return ""
     }
     
     func initWebViewURL() -> WebViewController
