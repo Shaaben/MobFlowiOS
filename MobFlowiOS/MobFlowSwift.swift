@@ -284,7 +284,7 @@ public class MobiFlowSwift: NSObject
         let encodedAdjustAttributes = adjustAttributes.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) ?? ""
         let customString = "\(self.endpoint)?\(baseEncodedMergePackageUUID);\(trackingPlatform);\(encodedAdjustAttributes)"
         
-        print("generated custom string : \(customString)")
+//        print("generated custom string : \(customString)")
         self.customURL = customString
     }
         
