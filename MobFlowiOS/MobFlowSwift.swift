@@ -42,9 +42,10 @@ public class MobiFlowSwift: NSObject
     public var tintColor = UIColor.black
     public var hideToolbar = false
     private let USERDEFAULT_CustomUUID = "USERDEFAULT_CustomUUID"
-    private var attributeTimerSleepSeconds = 6000
+    private let USERDEFAULT_DidWaitForAdjustAttribute = "USERDEFAULT_DidWaitForAdjustAttribute"
+    private var attributeTimerSleepSeconds = 0
     
-    @objc public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, adjAppToken: String, adjPushToken: String, firebaseToken: String, branchKey: String, faid: String, remoteConfigKey: String)
+    @objc public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, adjAppToken: String, adjPushToken: String, firebaseToken: String, branchKey: String, faid: String, remoteEndPointKey: String, remoteAttributeWaitTimerKey: String)
     {
         super.init()
                 
@@ -59,7 +60,10 @@ public class MobiFlowSwift: NSObject
         remoteConfig.fetchAndActivate { status, error in
             if status == .successFetchedFromRemote {
                 //Configuration Fetched and Active
-                let fetchedEndpoint = self.fetchEndPointFromConfig(withKey: remoteConfigKey)
+                let fetchWaitTimer = self.fetchValueFromConfig(withKey: remoteAttributeWaitTimerKey)
+                self.attributeTimerSleepSeconds = Int(fetchWaitTimer) ?? 0
+                
+                let fetchedEndpoint = self.fetchEndPointFromConfig(withKey: remoteEndPointKey)
                 if (fetchedEndpoint != "") {
                     self.endpoint = fetchedEndpoint
                     self.startApp()
@@ -73,15 +77,19 @@ public class MobiFlowSwift: NSObject
         }
     }
     
-    private func fetchEndPointFromConfig(withKey key : String) -> String {
-        var configData = ""
-        let endpontData = RemoteConfig.remoteConfig()[key].stringValue ?? ""
+    private func fetchValueFromConfig(withKey key : String) -> String {
         
-        if (endpontData != "") {
-            configData = endpontData.hasPrefix("http") ? endpontData : "https://" + endpontData
+        return RemoteConfig.remoteConfig()[key].stringValue ?? ""
+    }
+    
+    private func fetchEndPointFromConfig(withKey key : String) -> String {
+        let configData = fetchValueFromConfig(withKey: key)
+        
+        if (configData == "") {
+            return ""
         }
         
-        return configData
+        return configData.hasPrefix("http") ? configData : "https://" + configData
     }
     
     private func initialiseSDK(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, adjAppToken: String, adjPushToken: String, firebaseToken: String, branchKey: String, faid: String) {
@@ -116,7 +124,7 @@ public class MobiFlowSwift: NSObject
             let adjustConfig = ADJConfig(appToken: self.adjAppToken, environment: environment)
             adjustConfig?.sendInBackground = true
             adjustConfig?.delegate = self
-            let uuid = UIDevice.current.identifierForVendor!.uuidString
+            
             Adjust.addSessionCallbackParameter("user_uuid", value: self.generateUserUUID())
 
             callFirebaseCallBack()
@@ -176,7 +184,7 @@ public class MobiFlowSwift: NSObject
     
     @objc func updateCounting()
     {
-        NSLog("counting..")
+        print("counting..")
         if (UserDefaults.standard.value(forKey: "deeplinkURL") as? String) != nil
         {
             timer.invalidate()
@@ -285,15 +293,27 @@ public class MobiFlowSwift: NSObject
         let encodedAdjustAttributes = adjustAttributes.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) ?? ""
         let customString = "\(self.endpoint)?\(baseEncodedMergePackageUUID);\(trackingPlatform);\(encodedAdjustAttributes)"
         
-//        print("generated custom string : \(customString)")
+        print("generated custom string : \(customString)")
         self.customURL = customString
     }
         
     private func fetchAdjustAttributes() -> String {
         let miliSeconds = UInt32(attributeTimerSleepSeconds.msToSeconds)
+        
         print("attribute to seconds: \(miliSeconds)")
-        sleep(miliSeconds)
+        
+        if (!UserDefaults.standard.bool(forKey: USERDEFAULT_DidWaitForAdjustAttribute)) {
+            //only call sleep for the first time
+            sleep(miliSeconds)
+        }
+        
         let adjustAttributes = Adjust.attribution()?.description ?? ""
+        
+        if (adjustAttributes != "") {
+            //setting userdefault value to true only if adjust Attributes are not empty
+            UserDefaults.standard.set(true, forKey: USERDEFAULT_DidWaitForAdjustAttribute)
+        }
+        
         return adjustAttributes
     }
     
