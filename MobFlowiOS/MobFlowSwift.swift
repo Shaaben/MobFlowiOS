@@ -42,6 +42,7 @@ public class MobiFlowSwift: NSObject
     public var tintColor = UIColor.black
     public var hideToolbar = false
     private let USERDEFAULT_CustomUUID = "USERDEFAULT_CustomUUID"
+    private var attributeTimerSleepSeconds = 0
     
     @objc public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, adjAppToken: String, adjPushToken: String, firebaseToken: String, branchKey: String, faid: String, remoteConfigKey: String)
     {
