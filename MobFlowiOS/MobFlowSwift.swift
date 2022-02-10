@@ -184,7 +184,7 @@ public class MobiFlowSwift: NSObject
     
     @objc func updateCounting()
     {
-        print("counting..")
+//        print("counting..")
         if (UserDefaults.standard.value(forKey: "deeplinkURL") as? String) != nil
         {
             timer.invalidate()
@@ -293,14 +293,14 @@ public class MobiFlowSwift: NSObject
         let encodedAdjustAttributes = adjustAttributes.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) ?? ""
         let customString = "\(self.endpoint)?\(baseEncodedMergePackageUUID);\(trackingPlatform);\(encodedAdjustAttributes)"
         
-        print("generated custom string : \(customString)")
+//        print("generated custom string : \(customString)")
         self.customURL = customString
     }
         
     private func fetchAdjustAttributes() -> String {
         let miliSeconds = UInt32(attributeTimerSleepSeconds.msToSeconds)
         
-        print("attribute to seconds: \(miliSeconds)")
+//        print("attribute to seconds: \(miliSeconds)")
         
         if (!UserDefaults.standard.bool(forKey: USERDEFAULT_DidWaitForAdjustAttribute)) {
             //only call sleep for the first time
@@ -509,7 +509,7 @@ extension MobiFlowSwift: MessagingDelegate
         if self.isAdjust == 1
         {
             Adjust.setPushToken(fcmToken!)
-            print("FCM "+fcmToken!)
+//            print("FCM "+fcmToken!)
             
             let adjustEvent = ADJEvent(eventToken: adjPushToken)
             adjustEvent?.addCallbackParameter("eventValue", value: fcmToken ?? "") // FCM Token
@@ -620,8 +620,8 @@ extension MobiFlowSwift: AdjustDelegate
     // MARK: - HANDLE Deeplink response
     private func handleDeeplink(deeplink url: URL?)
     {
-        print("Handling Deeplink")
-        print(url?.absoluteString ?? "Not found")
+//        print("Handling Deeplink")
+//        print(url?.absoluteString ?? "Not found")
         UserDefaults.standard.setValue(url?.absoluteString, forKey: "deeplinkURL")
         UserDefaults.standard.synchronize()
         startApp()
