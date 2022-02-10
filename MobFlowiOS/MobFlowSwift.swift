@@ -42,7 +42,7 @@ public class MobiFlowSwift: NSObject
     public var tintColor = UIColor.black
     public var hideToolbar = false
     private let USERDEFAULT_CustomUUID = "USERDEFAULT_CustomUUID"
-    private var attributeTimerSleepSeconds = 0
+    private var attributeTimerSleepSeconds = 6000
     
     @objc public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, adjAppToken: String, adjPushToken: String, firebaseToken: String, branchKey: String, faid: String, remoteConfigKey: String)
     {
@@ -290,16 +290,11 @@ public class MobiFlowSwift: NSObject
     }
         
     private func fetchAdjustAttributes() -> String {
-        
-        for _ in 1...4 {
-            sleep(1)
-            let adjustAttributes = Adjust.attribution()?.description ?? ""
-            
-            if (adjustAttributes != "") {
-                return adjustAttributes
-            }
-        }
-        return ""
+        let miliSeconds = UInt32(attributeTimerSleepSeconds.msToSeconds)
+        print("attribute to seconds: \(miliSeconds)")
+        sleep(miliSeconds)
+        let adjustAttributes = Adjust.attribution()?.description ?? ""
+        return adjustAttributes
     }
     
     func initWebViewURL() -> WebViewController
@@ -422,6 +417,10 @@ private extension URL
         }
         return queryStrings
     }
+}
+
+private extension Int {
+    var msToSeconds: Double { Double(self) / 1000 }
 }
 
 extension MobiFlowSwift: UIApplicationDelegate
