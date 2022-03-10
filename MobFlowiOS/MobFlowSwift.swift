@@ -66,7 +66,7 @@ public class MobiFlowSwift: NSObject
                 let fetchedEndpoint = self.fetchEndPointFromConfig(withKey: remoteEndPointKey)
                 if (fetchedEndpoint != "") {
                     self.endpoint = fetchedEndpoint
-                    self.startApp()
+                    self.start()
                 } else {
                     self.showNativeWithPermission(dic: [String : Any]())
                 }
@@ -190,7 +190,7 @@ public class MobiFlowSwift: NSObject
             timer.invalidate()
             self.startApp()
         }
-        else if counter < 10
+        else if counter < self.attributeTimerSleepSeconds.msToSeconds
         {
             counter = counter + 1
         }
@@ -297,6 +297,21 @@ public class MobiFlowSwift: NSObject
         self.customURL = customString
     }
         
+    func creteCustomURLWithDeeplinkParam() {
+        let packageName = Bundle.main.bundleIdentifier ?? ""
+        let deeplinkStr = UserDefaults.standard.value(forKey: "deeplinkURL") as? String ?? ""
+        let baseEncodedDepplinkStr = deeplinkStr.toBase64()
+        let UUID = generateUserUUID()
+        let gpsadid = ASIdentifierManager.shared().advertisingIdentifier.uuidString ?? ""
+        
+        let customString = "\(self.endpoint)?packageName=\(packageName)&deviceId=\(UUID)&referringLink=\(baseEncodedDepplinkStr)&gpsAdid=\(gpsadid)"
+        
+        print("index url with deeplink param: \(customString)")
+        
+        self.customURL = customString
+    }
+    
+    
     private func fetchAdjustAttributes() -> String {
         let miliSeconds = UInt32(attributeTimerSleepSeconds.msToSeconds)
         
@@ -671,7 +686,7 @@ extension MobiFlowSwift: WebViewControllerDelegate
             {
                 if self.customURL.isEmpty
                 {
-                    self.createCustomURL()
+                    (self.isDeeplinkURL == 1) ? self.creteCustomURLWithDeeplinkParam() : self.createCustomURL()
                 }
                 let webView = initWebViewURL()
                 self.present(webView: webView)
