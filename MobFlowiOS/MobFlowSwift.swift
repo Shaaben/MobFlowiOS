@@ -190,7 +190,7 @@ public class MobiFlowSwift: NSObject
             timer.invalidate()
             self.startApp()
         }
-        else if counter < self.attributeTimerSleepSeconds.msToSeconds
+        else if counter < Int(self.attributeTimerSleepSeconds.msToSeconds)
         {
             counter = counter + 1
         }
@@ -299,12 +299,19 @@ public class MobiFlowSwift: NSObject
         
     func creteCustomURLWithDeeplinkParam() {
         let packageName = Bundle.main.bundleIdentifier ?? ""
-        let deeplinkStr = UserDefaults.standard.value(forKey: "deeplinkURL") as? String ?? ""
-        let baseEncodedDepplinkStr = deeplinkStr.toBase64()
         let UUID = generateUserUUID()
-        let gpsadid = ASIdentifierManager.shared().advertisingIdentifier.uuidString ?? ""
+        let gpsadid = ASIdentifierManager.shared().advertisingIdentifier.uuidString
         
-        let customString = "\(self.endpoint)?packageName=\(packageName)&deviceId=\(UUID)&referringLink=\(baseEncodedDepplinkStr)&gpsAdid=\(gpsadid)"
+        var d = ""
+        if self.isDeeplinkURL == 1
+        {
+            let deeplinkURL = UserDefaults.standard.value(forKey: "deeplinkURL") as? String
+            d = deeplinkURL!.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+            d = d.replacingOccurrences(of: "=", with: "%3D", options: .literal, range: nil)
+            d = d.replacingOccurrences(of: "&", with: "%26", options: .literal, range: nil)
+        }
+        
+        let customString = "\(self.endpoint)?packageName=\(packageName)&deviceId=\(UUID)&referringLink=\(d)&gpsAdid=\(gpsadid)"
         
         print("index url with deeplink param: \(customString)")
         
