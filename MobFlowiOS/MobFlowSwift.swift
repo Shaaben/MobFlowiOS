@@ -184,9 +184,13 @@ public class MobiFlowSwift: NSObject
     
     @objc func updateCounting()
     {
-//        print("counting..")
         if (UserDefaults.standard.value(forKey: "deeplinkURL") as? String) != nil
         {
+            timer.invalidate()
+            self.startApp()
+        }
+        else if (UserDefaults.standard.bool(forKey: "didWaitforDeeplink")) {
+            
             timer.invalidate()
             self.startApp()
         }
@@ -196,6 +200,7 @@ public class MobiFlowSwift: NSObject
         }
         else
         {
+            UserDefaults.standard.setBoolValue(true, forKey: "didWaitforDeeplink")
             timer.invalidate()
             self.startApp()
         }
