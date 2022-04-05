@@ -49,6 +49,8 @@ public class MobiFlowSwift: NSObject
     var endpoint = ""
     var adjAppToken = ""
     var adjPushToken = ""
+    var firebaseToken = ""
+    var faid = ""
     var branchKey = ""
     var customURL = ""
     var schemeURL = ""
@@ -65,7 +67,7 @@ public class MobiFlowSwift: NSObject
     private let USERDEFAULT_DidWaitForAdjustAttribute = "USERDEFAULT_DidWaitForAdjustAttribute"
     private var attributeTimerSleepSeconds = 6000
     
-    @objc public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, adjPushToken: String, branchKey: String, faid: String, initDelegate: MobiFlowDelegate, isUnityApp: Int )
+    @objc public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, adjPushToken: String, firebaseToken: String, branchKey: String, faid: String, initDelegate: MobiFlowDelegate, isUnityApp: Int )
     {
         super.init()
         
@@ -110,15 +112,24 @@ public class MobiFlowSwift: NSObject
             let adjustConfig = ADJConfig(appToken: self.adjAppToken, environment: environment)
             adjustConfig?.sendInBackground = true
             adjustConfig?.delegate = self
-            let uuid = UIDevice.current.identifierForVendor!.uuidString
-            Adjust.addSessionCallbackParameter("App_To_Adjust_DeviceId", value: uuid)
-            Adjust.addSessionCallbackParameter("Firebase_App_InstanceId", value: faid)
+            
+            Adjust.addSessionCallbackParameter("user_uuid", value: self.generateUserUUID())
+
+            callFirebaseCallBack()
+            
             Adjust.appDidLaunch(adjustConfig)
         }
 
         UIApplication.shared.registerForRemoteNotifications()
     }
     
+    private func callFirebaseCallBack() {
+        let adjustEvent = ADJEvent(eventToken: firebaseToken)
+        adjustEvent?.addCallbackParameter("eventValue", value: self.faid) //firebase Instance Id
+        adjustEvent?.addCallbackParameter("user_uuid", value: self.generateUserUUID())
+        
+        Adjust.trackEvent(adjustEvent)
+    }
     
     @objc public func start()
     {
