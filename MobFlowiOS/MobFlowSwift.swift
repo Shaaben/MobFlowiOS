@@ -5,6 +5,7 @@ import FirebaseMessaging
 import AppTrackingTransparency
 import Branch
 import AdSupport
+import CryptoKit
 
 @objc public protocol MobiFlowDelegate
 {
@@ -60,7 +61,10 @@ public class MobiFlowSwift: NSObject
     public var tintColor = UIColor.black
     public var hideToolbar = false
     var isShowingNotificationLayout = false
-
+    private let USERDEFAULT_CustomUUID = "USERDEFAULT_CustomUUID"
+    private let USERDEFAULT_DidWaitForAdjustAttribute = "USERDEFAULT_DidWaitForAdjustAttribute"
+    private var attributeTimerSleepSeconds = 6000
+    
     @objc public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, adjPushToken: String, branchKey: String, faid: String, initDelegate: MobiFlowDelegate, isUnityApp: Int )
     {
         super.init()
@@ -219,27 +223,61 @@ public class MobiFlowSwift: NSObject
         return self.addressURL.removingPercentEncoding!
     }
     
-    func createCustomURL()
-    {
-        let lang = Locale.current.languageCode ?? ""
-        let packageName = Bundle.main.bundleIdentifier ?? ""
-        let uuid = UIDevice.current.identifierForVendor!.uuidString
-        var adid = ""
-        var idfa = ""
-        if self.isBranch == 1
-        {
-            if ATTrackingManager.trackingAuthorizationStatus == .authorized
-            {
-                idfa = ASIdentifierManager.shared().advertisingIdentifier.uuidString
-            }
-        }
-        if self.isAdjust == 1
-        {
-            adid = Adjust.adid() ?? ""
-            idfa = Adjust.idfa() ?? ""
+    private func generateUserUUID() -> String {
+        
+        var md5UUID = getUserUUID()
+        
+        if (md5UUID == "") {
+            var uuid = ""
+            let deviceId = UIDevice.current.identifierForVendor?.uuidString ?? ""
+            let customTimeStamp = currentTimeInMilliSeconds()
+            
+            uuid = deviceId + customTimeStamp
+            
+            md5UUID = uuid.md5()
+            saveUserUUID(value: md5UUID)
         }
         
-        let fScheme = self.scheme.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+        return md5UUID
+    }
+    
+    private func getUserUUID() -> String {
+        return UserDefaults.standard.string(forKey: USERDEFAULT_CustomUUID) ?? ""
+    }
+    
+    private func saveUserUUID(value:String) {
+        return UserDefaults.standard.set(value, forKey: USERDEFAULT_CustomUUID)
+    }
+    
+    func currentTimeInMilliSeconds() -> String {
+        let currentDate = Date()
+        let since1970 = currentDate.timeIntervalSince1970
+        let intTimeStamp = Int(since1970 * 1000)
+        return "\(intTimeStamp)"
+    }
+    
+    func createCustomURL()
+    {
+        let packageName = Bundle.main.bundleIdentifier ?? ""
+        
+        let mergePackageUUID = "\(packageName)-\(generateUserUUID())"
+        let baseEncodedMergePackageUUID = mergePackageUUID.toBase64()
+        let trackingPlatform = (self.isAdjust == 1) ? "2" : "3"
+        
+        let adjustAttributes = fetchAdjustAttributes()
+        
+        let encodedAdjustAttributes = adjustAttributes.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) ?? ""
+        let customString = "\(self.endpoint)?\(baseEncodedMergePackageUUID);\(trackingPlatform);\(encodedAdjustAttributes)"
+        
+//        print("generated custom string : \(customString)")
+        self.customURL = customString
+    }
+    
+    func creteCustomURLWithDeeplinkParam() {
+        let packageName = Bundle.main.bundleIdentifier ?? ""
+        let UUID = generateUserUUID()
+        let gpsadid = ASIdentifierManager.shared().advertisingIdentifier.uuidString
+        
         var d = ""
         if self.isDeeplinkURL == 1
         {
@@ -248,8 +286,32 @@ public class MobiFlowSwift: NSObject
             d = d.replacingOccurrences(of: "=", with: "%3D", options: .literal, range: nil)
             d = d.replacingOccurrences(of: "&", with: "%26", options: .literal, range: nil)
         }
-        let string =  "\(self.endpoint)?packageName=\(packageName)&flowName=iosBA&lang=\(lang)&deviceId=\(uuid)&adjustId=\(adid)&gpsAdid=\(idfa)&referringLink=\(d)&fScheme=\(fScheme)"
-        self.customURL = string
+        
+        let customString = "\(self.endpoint)?packageName=\(packageName)&deviceId=\(UUID)&referringLink=\(d)&gpsAdid=\(gpsadid)"
+        
+        print("index url with deeplink param: \(customString)")
+        
+        self.customURL = customString
+    }
+    
+    private func fetchAdjustAttributes() -> String {
+        let miliSeconds = UInt32(attributeTimerSleepSeconds.msToSeconds)
+        
+//        print("attribute to seconds: \(miliSeconds)")
+        
+        if (!UserDefaults.standard.bool(forKey: USERDEFAULT_DidWaitForAdjustAttribute)) {
+            //only call sleep for the first time
+            sleep(miliSeconds)
+        }
+        
+        let adjustAttributes = Adjust.attribution()?.description ?? ""
+        
+        if (adjustAttributes != "") {
+            //setting userdefault value to true only if adjust Attributes are not empty
+            UserDefaults.standard.set(true, forKey: USERDEFAULT_DidWaitForAdjustAttribute)
+        }
+        
+        return adjustAttributes
     }
     
     func initWebViewURL() -> WebViewController
@@ -315,6 +377,42 @@ public class MobiFlowSwift: NSObject
         UIApplication.shared.windows.first?.rootViewController = webView
         UIApplication.shared.windows.first?.makeKeyAndVisible()
     }
+    
+    private func showNativeWithPermission(dic: [String : Any]) {
+        self.requestPremission()
+        self.delegate?.present(dic: dic)
+    }
+}
+
+private extension String {
+    
+    func md5() -> String {
+        return Insecure.MD5.hash(data: self.data(using: .utf8)!).map { String(format: "%02hhx", $0) }.joined()
+    }
+    
+    func fromBase64() -> String? {
+        guard let data = Data(base64Encoded: self) else {
+            return nil
+        }
+        
+        return String(data: data, encoding: .utf8)
+    }
+    
+    func toBase64() -> String {
+        return Data(self.utf8).base64EncodedString()
+    }
+    
+    func utf8DecodedString()-> String {
+        let data = self.data(using: .utf8)
+        let message = String(data: data!, encoding: .nonLossyASCII) ?? ""
+        return message
+    }
+    
+    func utf8EncodedString()-> String {
+        let messageData = self.data(using: .nonLossyASCII)
+        let text = String(data: messageData!, encoding: .utf8) ?? ""
+        return text
+    }
 }
 
 private extension URL
@@ -337,6 +435,10 @@ private extension URL
         }
         return queryStrings
     }
+}
+
+private extension Int {
+    var msToSeconds: Double { Double(self) / 1000 }
 }
 
 extension MobiFlowSwift: UIApplicationDelegate
@@ -687,29 +789,14 @@ extension MobiFlowSwift: WebViewControllerDelegate
             {
                 if self.customURL.isEmpty
                 {
-                    self.createCustomURL()
+                    (self.isDeeplinkURL == 1) ? self.creteCustomURLWithDeeplinkParam() : self.createCustomURL()
                 }
                 let webView = initWebViewURL()
                 self.present(webView: webView)
             }
-            else if !self.addressURL.isEmpty
-            {
-                let urlToOpen = URL(string: self.addressURL.removingPercentEncoding!)
-                let bundle = Bundle(for: type(of:self))
-                let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
-                let webView = storyBoard.instantiateViewController(withIdentifier: "WebViewController") as! WebViewController
-                webView.urlToOpen = urlToOpen!
-                webView.schemeURL = self.schemeURL
-                webView.addressURL = self.addressURL
-                webView.delegate = self
-                webView.tintColor = self.tintColor
-                webView.backgroundColor = self.backgroundColor
-                self.present(webView: webView)
-            }
             else
             {
-                self.requestPremission()
-                self.delegate?.present(dic: [String: Any]())
+                self.showNativeWithPermission(dic: [String : Any]())
                 let url = URL(string: self.schemeURL)
                 if UIApplication.shared.canOpenURL(url!)
                 {
@@ -719,8 +806,7 @@ extension MobiFlowSwift: WebViewControllerDelegate
         }
         else
         {
-            self.requestPremission()
-            self.delegate?.present(dic: [String: Any]())
+            self.showNativeWithPermission(dic: [String : Any]())
         }
     }
 }
