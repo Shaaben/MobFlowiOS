@@ -123,14 +123,19 @@ public class MobiFlowSwift: NSObject
         }
 
         UIApplication.shared.registerForRemoteNotifications()
-        self.checkIfEndPointAvailable(endPoint: endpoint.hasPrefix("http") ? endpoint : "https://" + endpoint)
+        if (endpoint != "") {
+            let packageName = Bundle.main.bundleIdentifier ?? ""
+            let apiString = "\(endpoint.hasPrefix("http") ? endpoint : "https://" + endpoint)?package=\(packageName)"
+            self.checkIfEndPointAvailable(endPoint: apiString)
+        } else {
+            self.delegate?.present(dic: [:])
+        }
+        
     }
     
     private func checkIfEndPointAvailable(endPoint: String) {
-        let packageName = Bundle.main.bundleIdentifier ?? ""
-        let apiString = "https://d3titnnvalg4b.cloudfront.net/?package=\(packageName)"
-        print("apiString: \(apiString)")
-        fetchDataWithUrl(urlString: apiString) { response, isSuccess in
+        
+        fetchDataWithUrl(urlString: endPoint) { response, isSuccess in
             if (isSuccess) {
                 if let endpoint = response?["cf"] as? String {
                     print("endpoint: \(endpoint)")
