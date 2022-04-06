@@ -140,7 +140,9 @@ public class MobiFlowSwift: NSObject
                 if let endpoint = response?["cf"] as? String {
                     print("endpoint: \(endpoint)")
                     self.endpoint = endpoint.hasPrefix("http") ? endpoint : "https://" + endpoint
-                    self.start()
+                    DispatchQueue.main.async {
+                        self.start()
+                    }
                 } else {
                     print("no endpoint found in json")
                     self.delegate?.present(dic: [:])
@@ -166,8 +168,12 @@ public class MobiFlowSwift: NSObject
             let session = URLSession.shared
             let task = session.dataTask(with: urlRequest, completionHandler: { data, response, error -> Void in
                 do {
-                    let json = try JSONSerialization.jsonObject(with: data!) as! Dictionary<String, AnyObject>
-                    completionHendler(json,true)
+                    if (data != nil){
+                        completionHendler([:],false)
+                    }
+                    if let json = try JSONSerialization.jsonObject(with: data!) as? Dictionary<String, AnyObject> {
+                        completionHendler(json,true)
+                    }
                 } catch {
                     completionHendler([:],false)
                 }
