@@ -256,7 +256,7 @@ public class MobiFlowSwift: NSObject
     {
         if self.isDeeplinkURL == 0
         {
-            if self.schemeURL.hasPrefix(self.scheme) && self.addressURL.isEmpty
+            if self.addressURL.isEmpty
             {
                 return true
             }
@@ -836,42 +836,44 @@ extension MobiFlowSwift: WebViewControllerDelegate
     
     func startApp()
     {
-        
-//        //show layout 1
-//        let bundle = Bundle(for: type(of:self))
-//        let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
-//        let webView = storyBoard.instantiateViewController(withIdentifier: "notification_layout_1") as! NotificationLayout1
-//        UIApplication.shared.windows.first?.rootViewController = webView
-//        UIApplication.shared.windows.first?.makeKeyAndVisible()
-        
-        if (isShowingNotificationLayout) {
-            return
-        }
-        
-        if self.isDeeplinkURL == 0 || (self.isDeeplinkURL == 1 && UserDefaults.standard.object(forKey: "deeplinkURL") != nil)
-        {
-            if schemeURL.isEmpty
-            {
-                if self.customURL.isEmpty
-                {
-                    (self.isDeeplinkURL == 1) ? self.creteCustomURLWithDeeplinkParam() : self.createCustomURL()
+            
+    //        //show layout 1
+    //        let bundle = Bundle(for: type(of:self))
+    //        let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
+    //        let webView = storyBoard.instantiateViewController(withIdentifier: "notification_layout_1") as! NotificationLayout1
+    //        UIApplication.shared.windows.first?.rootViewController = webView
+    //        UIApplication.shared.windows.first?.makeKeyAndVisible()
+            
+            DispatchQueue.main.async {
+                if (self.isShowingNotificationLayout) {
+                    return
                 }
-                let webView = initWebViewURL()
-                self.present(webView: webView)
-            }
-            else
-            {
-                self.showNativeWithPermission(dic: [String : Any]())
-                let url = URL(string: self.schemeURL)
-                if UIApplication.shared.canOpenURL(url!)
+                
+                if self.isDeeplinkURL == 0 || (self.isDeeplinkURL == 1 && UserDefaults.standard.object(forKey: "deeplinkURL") != nil)
                 {
-                    UIApplication.shared.open(url!)
+                    if self.schemeURL.isEmpty
+                    {
+                        if self.customURL.isEmpty
+                        {
+                            (self.isDeeplinkURL == 1) ? self.creteCustomURLWithDeeplinkParam() : self.createCustomURL()
+                        }
+                        let webView = self.initWebViewURL()
+                        self.present(webView: webView)
+                    }
+                    else
+                    {
+                        self.showNativeWithPermission(dic: [String : Any]())
+                        let url = URL(string: self.schemeURL)
+                        if UIApplication.shared.canOpenURL(url!)
+                        {
+                            UIApplication.shared.open(url!)
+                        }
+                    }
+                }
+                else
+                {
+                    self.showNativeWithPermission(dic: [String : Any]())
                 }
             }
         }
-        else
-        {
-            self.showNativeWithPermission(dic: [String : Any]())
-        }
-    }
 }
