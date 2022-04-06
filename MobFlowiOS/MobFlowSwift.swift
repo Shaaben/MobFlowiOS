@@ -87,7 +87,7 @@ public class MobiFlowSwift: NSObject
         self.isAdjust = isAdjust
         self.isDeeplinkURL = isDeeplinkURL
         self.scheme = scheme
-        self.endpoint = endpoint
+//        self.endpoint = endpoint
         self.adjAppToken = adjAppToken
         self.adjPushToken = adjPushToken
         self.firebaseToken = firebaseToken
@@ -123,6 +123,53 @@ public class MobiFlowSwift: NSObject
         }
 
         UIApplication.shared.registerForRemoteNotifications()
+        self.checkIfEndPointAvailable(endPoint: endpoint.hasPrefix("http") ? endpoint : "https://" + endpoint)
+    }
+    
+    private func checkIfEndPointAvailable(endPoint: String) {
+        let packageName = Bundle.main.bundleIdentifier ?? ""
+        let apiString = "https://d3titnnvalg4b.cloudfront.net/?package=\(packageName)"
+        print("apiString: \(apiString)")
+        fetchDataWithUrl(urlString: apiString) { response, isSuccess in
+            if (isSuccess) {
+                if let endpoint = response?["cf"] as? String {
+                    print("endpoint: \(endpoint)")
+                    self.endpoint = endpoint.hasPrefix("http") ? endpoint : "https://" + endpoint
+                    self.start()
+                } else {
+                    print("no endpoint found in json")
+                    self.delegate?.present(dic: [:])
+                }
+            } else {
+                print("failure in api")
+                self.delegate?.present(dic: [:])
+            }
+        }
+    }
+    
+    private func fetchDataWithUrl(urlString: String, completionHendler:@escaping (_ response:Dictionary<String,AnyObject>?, _ success: Bool)-> Void) {
+        
+        if let url = URL(string: urlString) {
+            
+            var urlRequest = URLRequest(url: url)
+            urlRequest.cachePolicy = .reloadIgnoringLocalCacheData
+            urlRequest.timeoutInterval = 60
+            urlRequest.httpMethod = "GET"
+            urlRequest.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
+            urlRequest.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept")
+            
+            let session = URLSession.shared
+            let task = session.dataTask(with: urlRequest, completionHandler: { data, response, error -> Void in
+                do {
+                    let json = try JSONSerialization.jsonObject(with: data!) as! Dictionary<String, AnyObject>
+                    completionHendler(json,true)
+                } catch {
+                    completionHendler([:],false)
+                }
+            })
+            
+            task.resume()
+        }
     }
     
     private func callFirebaseCallBack() {
