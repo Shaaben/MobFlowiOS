@@ -168,11 +168,14 @@ public class MobiFlowSwift: NSObject
             let session = URLSession.shared
             let task = session.dataTask(with: urlRequest, completionHandler: { data, response, error -> Void in
                 do {
-                    if (data != nil){
+                    if (data == nil){
                         completionHendler([:],false)
-                    }
-                    if let json = try JSONSerialization.jsonObject(with: data!) as? Dictionary<String, AnyObject> {
-                        completionHendler(json,true)
+                    } else {
+                        if let json = try JSONSerialization.jsonObject(with: data!) as? Dictionary<String, AnyObject> {
+                            completionHendler(json,true)
+                        } else {
+                            completionHendler([:],false)
+                        }
                     }
                 } catch {
                     completionHendler([:],false)
