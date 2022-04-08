@@ -128,7 +128,7 @@ public class MobiFlowSwift: NSObject
             let apiString = "\(endpoint.hasPrefix("http") ? endpoint : "https://" + endpoint)?package=\(packageName)"
             self.checkIfEndPointAvailable(endPoint: apiString)
         } else {
-            self.delegate?.present(dic: [:])
+            self.showNativeWithPermission(dic: [:])
         }
         
     }
@@ -145,11 +145,11 @@ public class MobiFlowSwift: NSObject
                     }
                 } else {
                     print("no endpoint found in json")
-                    self.delegate?.present(dic: [:])
+                    self.showNativeWithPermission(dic: [:])
                 }
             } else {
                 print("failure in api")
-                self.delegate?.present(dic: [:])
+                self.showNativeWithPermission(dic: [:])
             }
         }
     }
