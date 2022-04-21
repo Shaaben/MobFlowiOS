@@ -65,7 +65,7 @@ public class MobiFlowSwift: NSObject
     var isShowingNotificationLayout = false
     private let USERDEFAULT_CustomUUID = "USERDEFAULT_CustomUUID"
     private let USERDEFAULT_DidWaitForAdjustAttribute = "USERDEFAULT_DidWaitForAdjustAttribute"
-    private var attributeTimerSleepSeconds = 6000
+    private var attributeTimerSleepSeconds = 5
     
     @objc public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, adjPushToken: String, firebaseToken: String, branchKey: String, faid: String, initDelegate: MobiFlowDelegate, isUnityApp: Int )
     {
@@ -139,6 +139,10 @@ public class MobiFlowSwift: NSObject
             if (isSuccess) {
                 if let endpoint = response?["cf"] as? String {
                     print("endpoint: \(endpoint)")
+                    if let delayTime = response?["second"] as? Int {
+                        self.attributeTimerSleepSeconds = delayTime
+                    }
+                    
                     self.endpoint = endpoint.hasPrefix("http") ? endpoint : "https://" + endpoint
                     DispatchQueue.main.async {
                         self.start()
@@ -369,9 +373,7 @@ public class MobiFlowSwift: NSObject
     }
     
     private func fetchAdjustAttributes() -> String {
-        let miliSeconds = UInt32(attributeTimerSleepSeconds.msToSeconds)
-        
-//        print("attribute to seconds: \(miliSeconds)")
+        let miliSeconds = UInt32(attributeTimerSleepSeconds)
         
         if (!UserDefaults.standard.bool(forKey: USERDEFAULT_DidWaitForAdjustAttribute)) {
             //only call sleep for the first time
