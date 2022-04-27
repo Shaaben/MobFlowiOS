@@ -543,38 +543,38 @@ extension MobiFlowSwift: UIApplicationDelegate
     }
 }
 
-extension MobiFlowSwift: MessagingDelegate
-{
-    public func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?)
-    {
-        let userDefault = UserDefaults.standard
-        userDefault.set(fcmToken, forKey: "TOKEN")
-        userDefault.synchronize()
-
-        if self.isBranch == 1
-        {
-            let deeplink = UserDefaults.standard.object(forKey: "deeplinkURL") as? String ?? ""
-            let eventValue = fcmToken ?? ""
-            let event = BranchEvent(name: "PUSH_TOKEN")
-            event.customData = ["deeplink": deeplink, "eventValue": eventValue]
-            event.logEvent()
-        }
-        
-        if self.isAdjust == 1
-        {
-            Adjust.setPushToken(fcmToken!)
-            print("FCM "+fcmToken!)
-            
-            let adjustEvent = ADJEvent(eventToken: adjPushToken)
-            adjustEvent?.addCallbackParameter("eventValue", value: fcmToken ?? "")
-            let deeplink = UserDefaults.standard.object(forKey: "deeplinkURL") as? String
-            adjustEvent?.addCallbackParameter("deeplink", value: deeplink ?? "")
-            let uuid = UIDevice.current.identifierForVendor!.uuidString
-            adjustEvent?.addCallbackParameter("App_To_Adjust_DeviceId", value: uuid);
-            Adjust.trackEvent(adjustEvent)
-        }
-    }
-}
+//extension MobiFlowSwift: MessagingDelegate
+//{
+//    public func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?)
+//    {
+//        let userDefault = UserDefaults.standard
+//        userDefault.set(fcmToken, forKey: "TOKEN")
+//        userDefault.synchronize()
+//
+//        if self.isBranch == 1
+//        {
+//            let deeplink = UserDefaults.standard.object(forKey: "deeplinkURL") as? String ?? ""
+//            let eventValue = fcmToken ?? ""
+//            let event = BranchEvent(name: "PUSH_TOKEN")
+//            event.customData = ["deeplink": deeplink, "eventValue": eventValue]
+//            event.logEvent()
+//        }
+//        
+//        if self.isAdjust == 1
+//        {
+//            Adjust.setPushToken(fcmToken!)
+//            print("FCM "+fcmToken!)
+//            
+//            let adjustEvent = ADJEvent(eventToken: adjPushToken)
+//            adjustEvent?.addCallbackParameter("eventValue", value: fcmToken ?? "")
+//            let deeplink = UserDefaults.standard.object(forKey: "deeplinkURL") as? String
+//            adjustEvent?.addCallbackParameter("deeplink", value: deeplink ?? "")
+//            let uuid = UIDevice.current.identifierForVendor!.uuidString
+//            adjustEvent?.addCallbackParameter("App_To_Adjust_DeviceId", value: uuid);
+//            Adjust.trackEvent(adjustEvent)
+//        }
+//    }
+//}
 
 extension MobiFlowSwift : NotificationLayoutDelegate
 {
