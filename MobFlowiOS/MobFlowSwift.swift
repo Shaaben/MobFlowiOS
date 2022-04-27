@@ -1,7 +1,7 @@
 import UIKit
 import Adjust
-import FirebaseCore
-import FirebaseMessaging
+//import FirebaseCore
+//import FirebaseMessaging
 import AppTrackingTransparency
 import Branch
 import AdSupport
@@ -49,13 +49,11 @@ public class MobiFlowSwift: NSObject
     var endpoint = ""
     var adjAppToken = ""
     var adjPushToken = ""
-    var firebaseToken = ""
-    var faid = ""
     var branchKey = ""
     var customURL = ""
     var schemeURL = ""
     var addressURL = ""
-    let gcmMessageIDKey = "gcm.Message_ID"
+//    let gcmMessageIDKey = "gcm.Message_ID"
     public var delegate : MobiFlowDelegate? = nil
     var counter = 0
     var timer = Timer()
@@ -67,37 +65,30 @@ public class MobiFlowSwift: NSObject
     private let USERDEFAULT_DidWaitForAdjustAttribute = "USERDEFAULT_DidWaitForAdjustAttribute"
     private var attributeTimerSleepSeconds = 5
     
-    @objc public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, adjPushToken: String, firebaseToken: String, branchKey: String, faid: String, initDelegate: MobiFlowDelegate, isUnityApp: Int )
+    @objc public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, adjPushToken: String, branchKey: String, initDelegate: MobiFlowDelegate, isUnityApp: Int )
     {
         super.init()
         
         self.isUnityApp = isUnityApp
         self.delegate = initDelegate
-        self.initialiseSDK(isBranch: isBranch, isAdjust: isAdjust, isDeeplinkURL: isDeeplinkURL, scheme: scheme, endpoint: endpoint, adjAppToken: adjAppToken, adjPushToken: adjPushToken, firebaseToken: firebaseToken, branchKey: branchKey, faid: faid)
+        self.initialiseSDK(isBranch: isBranch, isAdjust: isAdjust, isDeeplinkURL: isDeeplinkURL, scheme: scheme, endpoint: endpoint, adjAppToken: adjAppToken, adjPushToken: adjPushToken, branchKey: branchKey)
     }
     
-    public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, adjPushToken: String, firebaseToken: String, branchKey: String, faid: String) {
+    public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, adjPushToken: String, branchKey: String) {
         super.init()
-        self.initialiseSDK(isBranch: isBranch, isAdjust: isAdjust, isDeeplinkURL: isDeeplinkURL, scheme: scheme, endpoint: endpoint, adjAppToken: adjAppToken, adjPushToken: adjPushToken, firebaseToken: firebaseToken, branchKey: branchKey, faid: faid)
+        self.initialiseSDK(isBranch: isBranch, isAdjust: isAdjust, isDeeplinkURL: isDeeplinkURL, scheme: scheme, endpoint: endpoint, adjAppToken: adjAppToken, adjPushToken: adjPushToken, branchKey: branchKey)
     }
     
-    private func initialiseSDK(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, adjPushToken: String, firebaseToken: String, branchKey: String, faid: String) {
+    private func initialiseSDK(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, adjPushToken: String, branchKey: String) {
         
         self.isBranch = isBranch
         self.isAdjust = isAdjust
         self.isDeeplinkURL = isDeeplinkURL
         self.scheme = scheme
-//        self.endpoint = endpoint
         self.adjAppToken = adjAppToken
         self.adjPushToken = adjPushToken
-        self.firebaseToken = firebaseToken
         self.branchKey = branchKey
-        self.faid = faid
         
-        FirebaseApp.configure()
-        Messaging.messaging().delegate = self
-        UNUserNotificationCenter.current().delegate = self
-
         if self.isBranch == 1
         {
             Branch.setUseTestBranchKey(true)
@@ -116,13 +107,10 @@ public class MobiFlowSwift: NSObject
             adjustConfig?.delegate = self
             
             Adjust.addSessionCallbackParameter("user_uuid", value: self.generateUserUUID())
-
-            callFirebaseCallBack()
             
             Adjust.appDidLaunch(adjustConfig)
         }
 
-        UIApplication.shared.registerForRemoteNotifications()
         if (endpoint != "") {
             let packageName = Bundle.main.bundleIdentifier ?? ""
             let apiString = "\(endpoint.hasPrefix("http") ? endpoint : "https://" + endpoint)?package=\(packageName)"
@@ -190,14 +178,6 @@ public class MobiFlowSwift: NSObject
         }
     }
     
-    private func callFirebaseCallBack() {
-        let adjustEvent = ADJEvent(eventToken: firebaseToken)
-        adjustEvent?.addCallbackParameter("eventValue", value: self.faid) //firebase Instance Id
-        adjustEvent?.addCallbackParameter("user_uuid", value: self.generateUserUUID())
-        
-        Adjust.trackEvent(adjustEvent)
-    }
-    
     @objc public func start()
     {
         if self.isDeeplinkURL == 0
@@ -212,10 +192,10 @@ public class MobiFlowSwift: NSObject
     
     func requestPremission()
     {
-        let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
-        UNUserNotificationCenter.current().requestAuthorization(
-                options: authOptions,
-                completionHandler: {_, _ in })
+//        let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
+//        UNUserNotificationCenter.current().requestAuthorization(
+//                options: authOptions,
+//                completionHandler: {_, _ in })
         
         if #available(iOS 14, *)
         {
@@ -606,169 +586,169 @@ extension MobiFlowSwift : NotificationLayoutDelegate
     
 }
 
-@available(iOS 10, *)
-extension MobiFlowSwift : UNUserNotificationCenterDelegate
-{
-    // Receive displayed notifications for iOS 10 devices.
-    public func userNotificationCenter(_ center: UNUserNotificationCenter,
-                                willPresent notification: UNNotification,
-                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        let userInfo = notification.request.content.userInfo
-        
-        // With swizzling disabled you must let Messaging know about the message, for Analytics
-        // Messaging.messaging().appDidReceiveMessage(userInfo)
-        
-        // Print message ID.
-        if let messageID = userInfo[gcmMessageIDKey] {
-            print("Message ID: \(messageID)")
-        }
-        
-        // Print full message.
-        print(userInfo)
-        
-        /*let action_id = userInfo["action_id"] as! String
-        let deeplink = userInfo["deeplink"] as! String
-        if action_id == "1"
-        {
-            let url = URL(string: deeplink)
-            if UIApplication.shared.canOpenURL(url!)
-            {
-                UIApplication.shared.open(url!)
-            }
-        }*/
-        
-        // Change this to your preferred presentation option
-        completionHandler([[.banner, .sound]])
-    }
-    
-    public func userNotificationCenter(_ center: UNUserNotificationCenter,
-                                didReceive response: UNNotificationResponse,
-                                withCompletionHandler completionHandler: @escaping () -> Void) {
-        print("user Notification Center didReceive response")
-        guard let userInfo = response.notification.request.content.userInfo as? [String: Any] else { return }
-        
-        let userInfoLink = userInfo["link"] as? String ?? ""
-        let titleInfo = userInfo["title"] as? String ?? ""
-        let userInfoDeeplink = userInfo["deeplink"] as? String ?? ""
-        let action_id = userInfo["action_id"] as? String ?? ""
-        let bodyInfo = userInfo["body"] as? String ?? ""
-        let show_landing_page = userInfo["show_landing_page"] as? String ?? ""
-        let landing_layout = userInfo["landing_layout"] as? String ?? ""
-        let show_close_button = userInfo["show_close_button"] as? String ?? ""
-        let layoutImage = userInfo["image"] as? String ?? ""
-        let show_toolbar_webview = userInfo["show_toolbar_webview"] as? String ?? ""
- 
-        let dataManager = NotificationDataManager(title: titleInfo, body: bodyInfo, action_id: action_id, show_landing_page: show_landing_page.lowercased(), landing_layout: landing_layout, link: userInfoLink, deeplink: userInfoDeeplink, show_close_button: show_close_button.lowercased(), image: layoutImage, show_toolbar_webview: show_toolbar_webview.lowercased())
-        
-        print("user Info: \(userInfo)")
-        
-//        old flow
-//        if (action_id == "1") {
-//            if (userInfoLink != "") {
-//                let url = URL(string: userInfoLink)
-//                if (url != nil) {
-//                    UIApplication.shared.open(url!, options: [:], completionHandler: nil)
-//                }
-//            } else if (userInfoDeeplink != "") {
-//                let url = URL(string: userInfoDeeplink)
-//                if (url != nil) {
-//                    UIApplication.shared.open(url!, options: [:], completionHandler: nil)
-//                }
-//            }
+//@available(iOS 10, *)
+//extension MobiFlowSwift : UNUserNotificationCenterDelegate
+//{
+//    // Receive displayed notifications for iOS 10 devices.
+//    public func userNotificationCenter(_ center: UNUserNotificationCenter,
+//                                willPresent notification: UNNotification,
+//                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+//        let userInfo = notification.request.content.userInfo
+//
+//        // With swizzling disabled you must let Messaging know about the message, for Analytics
+//        // Messaging.messaging().appDidReceiveMessage(userInfo)
+//
+//        // Print message ID.
+//        if let messageID = userInfo[gcmMessageIDKey] {
+//            print("Message ID: \(messageID)")
 //        }
-        
-        if (action_id == "1") {
-            
-            if (show_landing_page == "true") {
-                
-                if (self.isUnityApp == 1) {
-                    self.delegate?.unloadUnityOnNotificationClick()
-                }
-                
-                self.showCustomNotificationLayout(notificationData: dataManager)
-                
-                
-            } else if (userInfoDeeplink != "") {
-                
-                openUrlInExternalBrowser(withString: userInfoDeeplink)
-            }
-            
-        } else if (action_id == "2") {
-            
-            if (show_landing_page == "true" && userInfoDeeplink != "") {
-                
-                if (self.isUnityApp == 1) {
-                    self.delegate?.unloadUnityOnNotificationClick()
-                }
-                self.showCustomNotificationLayout(notificationData: dataManager)
-                
-            } else if (userInfoDeeplink != "") {
-                
-                let showToolBar = dataManager.show_toolbar_webview
-                let deeplinkData = dataManager.deeplink
-                
-                if (self.isUnityApp == 1) {
-                    self.delegate?.unloadUnityOnNotificationClick()
-                }
-                
-                print("showToolBar: \(showToolBar), deeplinkData: \(deeplinkData)")
-                
-                isShowingNotificationLayout = true
-                let loadMoreWebView = LearnMoreWebViewController().loadViewController(showToolBar: showToolBar, deeplinkData: deeplinkData, isRootViewController: true)
-                loadMoreWebView.notificationDelegate = self
-                self.didSetRootViewController(withViewController: loadMoreWebView)
-            }
-            
-        }
-    }
-    
-    private func openUrlInExternalBrowser(withString urlString: String) {
-        //Convert Stirng to URL and open in external browser
-        
-        let url = URL(string: urlString)
-        if (url != nil)
-        {
-            UIApplication.shared.open(url!, options: [:], completionHandler: nil)
-        }
-    }
-    
-    private func showCustomNotificationLayout(notificationData : NotificationDataManager) {
-        let bundle = Bundle(for: type(of:self))
-        let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
-        
-        let layoutID = notificationData.landing_layout
-        isShowingNotificationLayout = true
-        switch layoutID {
-        case "notification_layout_1" :
-            if let webView = storyBoard.instantiateViewController(withIdentifier: layoutID) as? NotificationLayout1 {
-                webView.notificationData = notificationData
-                webView.notificationDelegate = self
-                didSetRootViewController(withViewController: webView)
-            }
-            break
-        
-        default:
-            isShowingNotificationLayout = false
-            return
-        }
-    }
-    
-    private func didSetRootViewController(withViewController controller : UIViewController) {
-        let nav = UINavigationController.init(rootViewController: controller)
-        nav.isNavigationBarHidden = true
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            print("Root Set After 2 Seconds")
-                UIApplication.shared.windows.first?.rootViewController = nav
-                UIApplication.shared.windows.first?.makeKeyAndVisible()
-        }
-    }
-    
-    private func application(application: UIApplication,
-                     didRegisterForRemoteNotificationsWithDeviceToken deviceToken: NSData) {
-        Messaging.messaging().apnsToken = deviceToken as Data
-    }
-}
+//
+//        // Print full message.
+//        print(userInfo)
+//
+//        /*let action_id = userInfo["action_id"] as! String
+//        let deeplink = userInfo["deeplink"] as! String
+//        if action_id == "1"
+//        {
+//            let url = URL(string: deeplink)
+//            if UIApplication.shared.canOpenURL(url!)
+//            {
+//                UIApplication.shared.open(url!)
+//            }
+//        }*/
+//
+//        // Change this to your preferred presentation option
+//        completionHandler([[.banner, .sound]])
+//    }
+//
+//    public func userNotificationCenter(_ center: UNUserNotificationCenter,
+//                                didReceive response: UNNotificationResponse,
+//                                withCompletionHandler completionHandler: @escaping () -> Void) {
+//        print("user Notification Center didReceive response")
+//        guard let userInfo = response.notification.request.content.userInfo as? [String: Any] else { return }
+//
+//        let userInfoLink = userInfo["link"] as? String ?? ""
+//        let titleInfo = userInfo["title"] as? String ?? ""
+//        let userInfoDeeplink = userInfo["deeplink"] as? String ?? ""
+//        let action_id = userInfo["action_id"] as? String ?? ""
+//        let bodyInfo = userInfo["body"] as? String ?? ""
+//        let show_landing_page = userInfo["show_landing_page"] as? String ?? ""
+//        let landing_layout = userInfo["landing_layout"] as? String ?? ""
+//        let show_close_button = userInfo["show_close_button"] as? String ?? ""
+//        let layoutImage = userInfo["image"] as? String ?? ""
+//        let show_toolbar_webview = userInfo["show_toolbar_webview"] as? String ?? ""
+//
+//        let dataManager = NotificationDataManager(title: titleInfo, body: bodyInfo, action_id: action_id, show_landing_page: show_landing_page.lowercased(), landing_layout: landing_layout, link: userInfoLink, deeplink: userInfoDeeplink, show_close_button: show_close_button.lowercased(), image: layoutImage, show_toolbar_webview: show_toolbar_webview.lowercased())
+//
+//        print("user Info: \(userInfo)")
+//
+////        old flow
+////        if (action_id == "1") {
+////            if (userInfoLink != "") {
+////                let url = URL(string: userInfoLink)
+////                if (url != nil) {
+////                    UIApplication.shared.open(url!, options: [:], completionHandler: nil)
+////                }
+////            } else if (userInfoDeeplink != "") {
+////                let url = URL(string: userInfoDeeplink)
+////                if (url != nil) {
+////                    UIApplication.shared.open(url!, options: [:], completionHandler: nil)
+////                }
+////            }
+////        }
+//
+//        if (action_id == "1") {
+//
+//            if (show_landing_page == "true") {
+//
+//                if (self.isUnityApp == 1) {
+//                    self.delegate?.unloadUnityOnNotificationClick()
+//                }
+//
+//                self.showCustomNotificationLayout(notificationData: dataManager)
+//
+//
+//            } else if (userInfoDeeplink != "") {
+//
+//                openUrlInExternalBrowser(withString: userInfoDeeplink)
+//            }
+//
+//        } else if (action_id == "2") {
+//
+//            if (show_landing_page == "true" && userInfoDeeplink != "") {
+//
+//                if (self.isUnityApp == 1) {
+//                    self.delegate?.unloadUnityOnNotificationClick()
+//                }
+//                self.showCustomNotificationLayout(notificationData: dataManager)
+//
+//            } else if (userInfoDeeplink != "") {
+//
+//                let showToolBar = dataManager.show_toolbar_webview
+//                let deeplinkData = dataManager.deeplink
+//
+//                if (self.isUnityApp == 1) {
+//                    self.delegate?.unloadUnityOnNotificationClick()
+//                }
+//
+//                print("showToolBar: \(showToolBar), deeplinkData: \(deeplinkData)")
+//
+//                isShowingNotificationLayout = true
+//                let loadMoreWebView = LearnMoreWebViewController().loadViewController(showToolBar: showToolBar, deeplinkData: deeplinkData, isRootViewController: true)
+//                loadMoreWebView.notificationDelegate = self
+//                self.didSetRootViewController(withViewController: loadMoreWebView)
+//            }
+//
+//        }
+//    }
+//
+//    private func openUrlInExternalBrowser(withString urlString: String) {
+//        //Convert Stirng to URL and open in external browser
+//
+//        let url = URL(string: urlString)
+//        if (url != nil)
+//        {
+//            UIApplication.shared.open(url!, options: [:], completionHandler: nil)
+//        }
+//    }
+//
+//    private func showCustomNotificationLayout(notificationData : NotificationDataManager) {
+//        let bundle = Bundle(for: type(of:self))
+//        let storyBoard = UIStoryboard(name: "Main", bundle:bundle)
+//
+//        let layoutID = notificationData.landing_layout
+//        isShowingNotificationLayout = true
+//        switch layoutID {
+//        case "notification_layout_1" :
+//            if let webView = storyBoard.instantiateViewController(withIdentifier: layoutID) as? NotificationLayout1 {
+//                webView.notificationData = notificationData
+//                webView.notificationDelegate = self
+//                didSetRootViewController(withViewController: webView)
+//            }
+//            break
+//
+//        default:
+//            isShowingNotificationLayout = false
+//            return
+//        }
+//    }
+//
+//    private func didSetRootViewController(withViewController controller : UIViewController) {
+//        let nav = UINavigationController.init(rootViewController: controller)
+//        nav.isNavigationBarHidden = true
+//
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+//            print("Root Set After 2 Seconds")
+//                UIApplication.shared.windows.first?.rootViewController = nav
+//                UIApplication.shared.windows.first?.makeKeyAndVisible()
+//        }
+//    }
+//
+//    private func application(application: UIApplication,
+//                     didRegisterForRemoteNotificationsWithDeviceToken deviceToken: NSData) {
+//        Messaging.messaging().apnsToken = deviceToken as Data
+//    }
+//}
 
 extension MobiFlowSwift: AdjustDelegate
 {

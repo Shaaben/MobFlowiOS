@@ -8,9 +8,9 @@ target 'MobFlowiOS' do
   # Pods for Test
   pod 'Adjust'
   pod 'ReachabilitySwift'
-  pod 'Firebase'
-  pod 'Firebase/Analytics'
-  pod 'Firebase/Messaging'
-  pod 'Firebase/Crashlytics'
+#  pod 'Firebase'
+#  pod 'Firebase/Analytics'
+#  pod 'Firebase/Messaging'
+#  pod 'Firebase/Crashlytics'
   pod 'Branch'
 end
