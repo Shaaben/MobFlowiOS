@@ -18,11 +18,11 @@ Pod::Spec.new do |spec|
   spec.framework = 'UIKit'
   spec.dependency 'Adjust'
   spec.dependency 'ReachabilitySwift'
-  spec.dependency 'Firebase'
-  spec.dependency 'Firebase/Analytics'
-  spec.dependency 'Firebase/Messaging'
+  # spec.dependency 'Firebase'
+  # spec.dependency 'Firebase/Analytics'
+  # spec.dependency 'Firebase/Messaging'
   spec.dependency 'Branch'
-  spec.dependency 'Firebase/Crashlytics'
+  # spec.dependency 'Firebase/Crashlytics'
   spec.source_files  = "MobFlowiOS/*.{swift}"
   spec.resources = "MobFlowiOS/*.{storyboard,xib,xcassets,lproj,png}"
   spec.swift_version = '5'
