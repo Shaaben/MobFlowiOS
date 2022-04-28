@@ -126,9 +126,14 @@ public class MobiFlowSwift: NSObject
                         self.attributeTimerSleepSeconds = delayTime
                     }
                     
-                    self.endpoint = endpoint.hasPrefix("http") ? endpoint : "https://" + endpoint
-                    DispatchQueue.main.async {
-                        self.start()
+                    if (endpoint == "") {
+                        print("no endpoint found in json")
+                        self.showNativeWithPermission(dic: [:])
+                    } else {
+                        self.endpoint = endpoint.hasPrefix("http") ? endpoint : "https://" + endpoint
+                        DispatchQueue.main.async {
+                            self.start()
+                        }
                     }
                 } else {
                     print("no endpoint found in json")
