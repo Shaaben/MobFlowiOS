@@ -2,7 +2,7 @@ Pod::Spec.new do |spec|
 
   spec.platform = :ios
   spec.name         = "MobFlowiOS"
-  spec.version      = "2.0.4"
+  spec.version      = "2.0.5"
   spec.requires_arc = true
   spec.summary      = "A short description of MobFlowiOS."
   spec.description  = <<-DESC
@@ -18,9 +18,9 @@ Pod::Spec.new do |spec|
   spec.framework = 'UIKit'
   spec.dependency 'Adjust'
   spec.dependency 'ReachabilitySwift'
-  # spec.dependency 'Firebase'
-  # spec.dependency 'Firebase/Analytics'
-  # spec.dependency 'Firebase/Messaging'
+  spec.dependency 'Firebase'
+  spec.dependency 'Firebase/Analytics'
+  spec.dependency 'Firebase/Messaging'
   spec.dependency 'Branch'
   # spec.dependency 'Firebase/Crashlytics'
   spec.source_files  = "MobFlowiOS/*.{swift}"

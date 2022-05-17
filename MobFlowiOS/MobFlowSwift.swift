@@ -4,6 +4,7 @@ import AppTrackingTransparency
 import Branch
 import AdSupport
 import CryptoKit
+import Firebase
 
 @objc public protocol MobiFlowDelegate
 {
@@ -50,6 +51,7 @@ public class MobiFlowSwift: NSObject
     var customURL = ""
     var schemeURL = ""
     var addressURL = ""
+    var faid = ""
     public var delegate : MobiFlowDelegate? = nil
     var counter = 0
     var timer = Timer()
@@ -61,21 +63,21 @@ public class MobiFlowSwift: NSObject
     private let USERDEFAULT_DidWaitForAdjustAttribute = "USERDEFAULT_DidWaitForAdjustAttribute"
     private var attributeTimerSleepSeconds = 5
     
-    @objc public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, branchKey: String, initDelegate: MobiFlowDelegate, isUnityApp: Int )
+    @objc public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, branchKey: String, initDelegate: MobiFlowDelegate, isUnityApp: Int, faid: String)
     {
         super.init()
         
         self.isUnityApp = isUnityApp
         self.delegate = initDelegate
-        self.initialiseSDK(isBranch: isBranch, isAdjust: isAdjust, isDeeplinkURL: isDeeplinkURL, scheme: scheme, endpoint: endpoint, adjAppToken: adjAppToken, branchKey: branchKey)
+        self.initialiseSDK(isBranch: isBranch, isAdjust: isAdjust, isDeeplinkURL: isDeeplinkURL, scheme: scheme, endpoint: endpoint, adjAppToken: adjAppToken, branchKey: branchKey, faid: faid)
     }
     
-    public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, branchKey: String) {
+    public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, branchKey: String, faid: String) {
         super.init()
-        self.initialiseSDK(isBranch: isBranch, isAdjust: isAdjust, isDeeplinkURL: isDeeplinkURL, scheme: scheme, endpoint: endpoint, adjAppToken: adjAppToken, branchKey: branchKey)
+        self.initialiseSDK(isBranch: isBranch, isAdjust: isAdjust, isDeeplinkURL: isDeeplinkURL, scheme: scheme, endpoint: endpoint, adjAppToken: adjAppToken, branchKey: branchKey, faid: faid)
     }
     
-    private func initialiseSDK(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, branchKey: String) {
+    private func initialiseSDK(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, branchKey: String, faid: String) {
         
         self.isBranch = isBranch
         self.isAdjust = isAdjust
@@ -83,6 +85,9 @@ public class MobiFlowSwift: NSObject
         self.scheme = scheme
         self.adjAppToken = adjAppToken
         self.branchKey = branchKey
+        self.faid = faid
+        
+        FirebaseApp.configure()
         
         if self.isBranch == 1
         {
@@ -102,6 +107,7 @@ public class MobiFlowSwift: NSObject
             adjustConfig?.delegate = self
             
             Adjust.addSessionCallbackParameter("user_uuid", value: self.generateUserUUID())
+            Adjust.addSessionCallbackParameter("Firebase_App_InstanceId", value: faid)
             
             Adjust.appDidLaunch(adjustConfig)
         }
