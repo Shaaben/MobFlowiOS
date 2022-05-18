@@ -4,7 +4,7 @@ import AppTrackingTransparency
 import Branch
 import AdSupport
 import CryptoKit
-import Firebase
+import FirebaseCore
 
 @objc public protocol MobiFlowDelegate
 {
