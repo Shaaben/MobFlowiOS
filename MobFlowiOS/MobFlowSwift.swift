@@ -73,8 +73,9 @@ public class MobiFlowSwift: NSObject
         self.initialiseSDK(isBranch: isBranch, isAdjust: isAdjust, isDeeplinkURL: isDeeplinkURL, scheme: scheme, endpoint: endpoint, adjAppToken: adjAppToken, branchKey: branchKey)
     }
     
-    public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, branchKey: String) {
+    public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, branchKey: String, initDelegate: MobiFlowDelegate) {
         super.init()
+        self.delegate = initDelegate
         self.initialiseSDK(isBranch: isBranch, isAdjust: isAdjust, isDeeplinkURL: isDeeplinkURL, scheme: scheme, endpoint: endpoint, adjAppToken: adjAppToken, branchKey: branchKey)
     }
     
@@ -86,6 +87,7 @@ public class MobiFlowSwift: NSObject
         self.scheme = scheme
         self.adjAppToken = adjAppToken
         self.branchKey = branchKey
+        self.endpoint = endpoint
         
         FirebaseApp.configure()
         
