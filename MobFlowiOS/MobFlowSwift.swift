@@ -126,7 +126,7 @@ public class MobiFlowSwift: NSObject
             adjustConfig?.delegate = self
             
             //delays the Adjust SDK from sending the initial install session and any event created for mentioned seconds
-            adjustConfig?.delayStart = 3
+            adjustConfig?.delayStart = 2
             
             Adjust.addSessionCallbackParameter("user_uuid", value: self.generateUserUUID())
             
