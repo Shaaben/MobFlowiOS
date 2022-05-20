@@ -53,6 +53,7 @@ public class MobiFlowSwift: NSObject
     var schemeURL = ""
     var addressURL = ""
     var faid = ""
+    var firebaseToken = ""
     public var delegate : MobiFlowDelegate? = nil
     var counter = 0
     var timer = Timer()
@@ -70,16 +71,16 @@ public class MobiFlowSwift: NSObject
         
         self.isUnityApp = isUnityApp
         self.delegate = initDelegate
-        self.initialiseSDK(isBranch: isBranch, isAdjust: isAdjust, isDeeplinkURL: isDeeplinkURL, scheme: scheme, endpoint: endpoint, adjAppToken: adjAppToken, branchKey: branchKey)
+        self.initialiseSDK(isBranch: isBranch, isAdjust: isAdjust, isDeeplinkURL: isDeeplinkURL, scheme: scheme, endpoint: endpoint, adjAppToken: adjAppToken, firebaseToken: firebaseToken ,branchKey: branchKey)
     }
     
-    public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, branchKey: String, initDelegate: MobiFlowDelegate) {
+    public init(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, firebaseToken: String, branchKey: String, initDelegate: MobiFlowDelegate) {
         super.init()
         self.delegate = initDelegate
-        self.initialiseSDK(isBranch: isBranch, isAdjust: isAdjust, isDeeplinkURL: isDeeplinkURL, scheme: scheme, endpoint: endpoint, adjAppToken: adjAppToken, branchKey: branchKey)
+        self.initialiseSDK(isBranch: isBranch, isAdjust: isAdjust, isDeeplinkURL: isDeeplinkURL, scheme: scheme, endpoint: endpoint, adjAppToken: adjAppToken, firebaseToken: firebaseToken ,branchKey: branchKey)
     }
     
-    private func initialiseSDK(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, branchKey: String) {
+    private func initialiseSDK(isBranch: Int, isAdjust: Int, isDeeplinkURL: Int, scheme: String, endpoint: String, adjAppToken: String, firebaseToken: String, branchKey: String) {
         
         self.isBranch = isBranch
         self.isAdjust = isAdjust
@@ -88,7 +89,7 @@ public class MobiFlowSwift: NSObject
         self.adjAppToken = adjAppToken
         self.branchKey = branchKey
         self.endpoint = endpoint
-        
+        self.firebaseToken = firebaseToken
         FirebaseApp.configure()
         
         Installations.installations().installationID { instanceID, error in
@@ -96,6 +97,7 @@ public class MobiFlowSwift: NSObject
             self.faid = instanceID ?? ""
             
             Adjust.addSessionCallbackParameter("Firebase_App_InstanceId", value: self.faid)
+            self.callFirebaseCallBack()
             
             //resumes the delayed adjust install session
             Adjust.sendFirstPackages()
@@ -138,6 +140,14 @@ public class MobiFlowSwift: NSObject
         } else {
             self.showNativeWithPermission(dic: [:])
         }
+    }
+    
+    private func callFirebaseCallBack() {
+        let adjustEvent = ADJEvent(eventToken: firebaseToken)
+        adjustEvent?.addCallbackParameter("eventValue", value: self.faid) //firebase Instance Id
+        adjustEvent?.addCallbackParameter("user_uuid", value: self.generateUserUUID())
+        
+        Adjust.trackEvent(adjustEvent)
     }
     
     private func checkIfEndPointAvailable(endPoint: String) {
